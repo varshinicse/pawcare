@@ -10,6 +10,8 @@ class AuthProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   String get userName => _userName;
+  String get userPhone => '+91 98765 43210';
+  String get userEmail => 'parent@pawcare.app';
 
   AuthProvider() {
     _loadUserName();
@@ -18,6 +20,14 @@ class AuthProvider with ChangeNotifier {
   Future<void> _loadUserName() async {
     _userName = await _authService.getUserName();
     notifyListeners();
+  }
+
+  Future<bool> checkSession() async {
+    final active = await _authService.hasActiveSession();
+    if (active) {
+      await _loadUserName();
+    }
+    return active;
   }
 
   Future<bool> signUp({

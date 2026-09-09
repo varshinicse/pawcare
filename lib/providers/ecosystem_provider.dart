@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/post_model.dart';
 import '../models/adoption_model.dart';
-import '../models/lost_pet_model.dart';
 import '../models/product_model.dart';
 import '../models/order_model.dart';
 import '../models/expense_model.dart';
@@ -12,7 +11,6 @@ class EcosystemProvider with ChangeNotifier {
 
   List<CommunityPost> _posts = [];
   List<AdoptionListing> _adoptions = [];
-  List<LostPetAlert> _lostPets = [];
   List<MarketplaceProduct> _cart = [];
   List<OrderRecord> _orders = [];
   bool _isLoading = false;
@@ -32,7 +30,6 @@ class EcosystemProvider with ChangeNotifier {
 
     _posts = await _firestoreService.getPostsOnce();
     _adoptions = await _firestoreService.getAdoptionsOnce();
-    _lostPets = await _firestoreService.getLostPetsOnce();
     _cart = await _firestoreService.getCartOnce();
     _orders = await _firestoreService.getOrdersOnce();
 
@@ -84,15 +81,6 @@ class EcosystemProvider with ChangeNotifier {
     _adoptions.insert(0, listing);
     notifyListeners();
     await _firestoreService.addAdoptionListing(listing);
-  }
-
-  // --- LOST & FOUND STATE ---
-  List<LostPetAlert> get lostPets => _lostPets;
-
-  Future<void> reportLostPet(LostPetAlert alert) async {
-    _lostPets.insert(0, alert);
-    notifyListeners();
-    await _firestoreService.addLostPetAlert(alert);
   }
 
   // --- MARKETPLACE STATE ---
@@ -148,6 +136,8 @@ class EcosystemProvider with ChangeNotifier {
   List<MarketplaceProduct> get cart => _cart;
   List<OrderRecord> get orders => _orders;
 
+  double get cartTotal => _cart.fold<double>(0, (sum, item) => sum + item.price);
+
   Future<void> addToCart(MarketplaceProduct product) async {
     _cart.add(product);
     notifyListeners();
@@ -156,6 +146,21 @@ class EcosystemProvider with ChangeNotifier {
 
   Future<void> removeFromCart(MarketplaceProduct product) async {
     _cart.remove(product);
+    notifyListeners();
+    await _firestoreService.saveCart(_cart);
+  }
+
+  Future<void> removeSingleFromCart(String productId) async {
+    final index = _cart.indexWhere((p) => p.id == productId);
+    if (index != -1) {
+      _cart.removeAt(index);
+      notifyListeners();
+      await _firestoreService.saveCart(_cart);
+    }
+  }
+
+  Future<void> clearCart() async {
+    _cart.clear();
     notifyListeners();
     await _firestoreService.saveCart(_cart);
   }

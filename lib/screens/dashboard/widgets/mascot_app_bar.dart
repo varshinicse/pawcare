@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../providers/auth_provider.dart';
 import '../../../providers/reminder_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_typography.dart';
@@ -49,6 +50,34 @@ class _MascotAppBarState extends State<MascotAppBar>
     super.dispose();
   }
 
+  void _confirmLogout(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Text('Log Out?'),
+        content: const Text('Are you sure you want to log out of PawCare?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dContext).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.alertCoral),
+            onPressed: () async {
+              Navigator.of(dContext).pop();
+              await Provider.of<AuthProvider>(context, listen: false).logout();
+              if (context.mounted) {
+                Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+              }
+            },
+            child: const Text('Log Out'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final reminderProvider = Provider.of<ReminderProvider>(context);
@@ -61,6 +90,9 @@ class _MascotAppBarState extends State<MascotAppBar>
     } else {
       _currentState = MascotState.idle;
     }
+
+    final totalAlerts = reminderProvider.todayReminders.where((r) => !r.isCompleted).length +
+        reminderProvider.overdueReminders.length;
 
     return Container(
       color: AppColors.creamBase,
@@ -158,7 +190,7 @@ class _MascotAppBarState extends State<MascotAppBar>
                       ],
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
 
                   // Notification Bell
                   Stack(
@@ -178,13 +210,13 @@ class _MascotAppBarState extends State<MascotAppBar>
                           ),
                         ),
                       ),
-                      if (reminderProvider.todayReminders.any((r) => !r.isCompleted) || reminderProvider.hasOverdueReminders)
+                      if (totalAlerts > 0)
                         Positioned(
                           top: 6,
                           right: 6,
                           child: Container(
-                            width: 9,
-                            height: 9,
+                            width: 10,
+                            height: 10,
                             decoration: const BoxDecoration(
                               color: AppColors.alertCoral,
                               shape: BoxShape.circle,
@@ -192,6 +224,24 @@ class _MascotAppBarState extends State<MascotAppBar>
                           ),
                         ),
                     ],
+                  ),
+
+                  // Log Out Button
+                  IconButton(
+                    tooltip: 'Log Out',
+                    onPressed: () => _confirmLogout(context),
+                    icon: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.logout_rounded,
+                        color: AppColors.softTaupe,
+                        size: 20,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -216,7 +266,6 @@ class _MascotAppBarState extends State<MascotAppBar>
         icon = Icons.sentiment_dissatisfied_rounded;
         break;
       case MascotState.idle:
-      default:
         bg = AppColors.clayPrimary;
         icon = Icons.pets_rounded;
         break;
@@ -249,7 +298,6 @@ class _MascotAppBarState extends State<MascotAppBar>
       case MascotState.worried:
         return 'Needs Attention!';
       case MascotState.idle:
-      default:
         return 'All Cozy';
     }
   }
@@ -261,7 +309,6 @@ class _MascotAppBarState extends State<MascotAppBar>
       case MascotState.worried:
         return AppColors.alertCoral;
       case MascotState.idle:
-      default:
         return AppColors.inkText;
     }
   }
@@ -273,7 +320,6 @@ class _MascotAppBarState extends State<MascotAppBar>
       case MascotState.worried:
         return '🥺';
       case MascotState.idle:
-      default:
         return '🐾';
     }
   }

@@ -7,12 +7,14 @@ class QuickActionsRow extends StatelessWidget {
   final VoidCallback onAddReminder;
   final VoidCallback onAddPet;
   final VoidCallback onEmergencyVet;
+  final VoidCallback? onMyPets;
 
   const QuickActionsRow({
     super.key,
     required this.onAddReminder,
     required this.onAddPet,
     required this.onEmergencyVet,
+    this.onMyPets,
   });
 
   @override
@@ -25,17 +27,25 @@ class QuickActionsRow extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            if (onMyPets != null)
+              _buildActionButton(
+                icon: Icons.pets_rounded,
+                label: 'My Pets',
+                color: AppColors.clayPrimary,
+                onTap: onMyPets!,
+              )
+            else
+              _buildActionButton(
+                icon: Icons.pets_rounded,
+                label: 'Add Pet',
+                color: AppColors.mossAccent,
+                onTap: onAddPet,
+              ),
             _buildActionButton(
               icon: Icons.add_alarm_rounded,
               label: 'Add Reminder',
-              color: AppColors.clayPrimary,
+              color: const Color(0xFFE08E45),
               onTap: onAddReminder,
-            ),
-            _buildActionButton(
-              icon: Icons.pets_rounded,
-              label: 'Add Pet',
-              color: AppColors.mossAccent,
-              onTap: onAddPet,
             ),
             _buildActionButton(
               icon: Icons.local_hospital_rounded,

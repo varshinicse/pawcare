@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/pet_model.dart';
-import '../../../models/recommendation_model.dart';
 import '../../../models/product_model.dart';
 import '../../../providers/ecosystem_provider.dart';
 import '../../../services/recommendation_engine.dart';

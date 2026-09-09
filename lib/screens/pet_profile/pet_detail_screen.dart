@@ -186,9 +186,62 @@ class PetDetailScreen extends StatelessWidget {
                 label: Text('Set ${pet.name} as Active Dashboard Pet'),
               ),
             ),
+            const SizedBox(height: 14),
+
+            // Delete Pet button
+            SizedBox(
+              width: double.infinity,
+              height: 54,
+              child: OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.alertCoral,
+                  side: const BorderSide(color: AppColors.alertCoral),
+                ),
+                onPressed: () => _confirmDeletePet(context, pet),
+                icon: const Icon(Icons.delete_outline_rounded, size: 20),
+                label: Text('Delete ${pet.name}\'s Profile'),
+              ),
+            ),
           ],
         ),
       ),
+    );
+  }
+
+  void _confirmDeletePet(BuildContext context, Pet pet) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: Text('Delete ${pet.name}?'),
+          content: Text('Are you sure you want to remove ${pet.name}\'s profile? This action cannot be undone.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.alertCoral),
+              onPressed: () async {
+                final petProvider = Provider.of<PetProvider>(context, listen: false);
+                await petProvider.deletePet(pet.id);
+                if (dialogContext.mounted) Navigator.of(dialogContext).pop();
+                if (context.mounted) {
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${pet.name}\'s profile was deleted.'),
+                      backgroundColor: AppColors.alertCoral,
+                    ),
+                  );
+                }
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
     );
   }
 

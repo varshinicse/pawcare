@@ -30,45 +30,46 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyA_MockApiKey_PawCare_2026',
-    appId: '1:123456789:web:pawcare2026',
-    messagingSenderId: '123456789',
+    apiKey: 'AIzaSyAH9XONxkgbRLS4_rXfsGeYqDE4ibfYg0Q',
+    appId: '1:187713861534:web:a1fb286484f61e6ce3488f',
+    messagingSenderId: '187713861534',
     projectId: 'pawcare-app-2026',
     authDomain: 'pawcare-app-2026.firebaseapp.com',
-    storageBucket: 'pawcare-app-2026.appspot.com',
+    storageBucket: 'pawcare-app-2026.firebasestorage.app',
+    measurementId: 'G-4SSXH7GYGC',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyA_MockApiKey_PawCare_Android',
-    appId: '1:123456789:android:pawcare2026',
-    messagingSenderId: '123456789',
+    apiKey: 'AIzaSyAH9XONxkgbRLS4_rXfsGeYqDE4ibfYg0Q',
+    appId: '1:187713861534:android:pawcare2026',
+    messagingSenderId: '187713861534',
     projectId: 'pawcare-app-2026',
-    storageBucket: 'pawcare-app-2026.appspot.com',
+    storageBucket: 'pawcare-app-2026.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyA_MockApiKey_PawCare_iOS',
-    appId: '1:123456789:ios:pawcare2026',
-    messagingSenderId: '123456789',
+    apiKey: 'AIzaSyAH9XONxkgbRLS4_rXfsGeYqDE4ibfYg0Q',
+    appId: '1:187713861534:ios:pawcare2026',
+    messagingSenderId: '187713861534',
     projectId: 'pawcare-app-2026',
-    storageBucket: 'pawcare-app-2026.appspot.com',
+    storageBucket: 'pawcare-app-2026.firebasestorage.app',
     iosBundleId: 'com.pawcare.petcare',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyA_MockApiKey_PawCare_macOS',
-    appId: '1:123456789:ios:pawcare2026',
-    messagingSenderId: '123456789',
+    apiKey: 'AIzaSyAH9XONxkgbRLS4_rXfsGeYqDE4ibfYg0Q',
+    appId: '1:187713861534:ios:pawcare2026',
+    messagingSenderId: '187713861534',
     projectId: 'pawcare-app-2026',
-    storageBucket: 'pawcare-app-2026.appspot.com',
+    storageBucket: 'pawcare-app-2026.firebasestorage.app',
     iosBundleId: 'com.pawcare.petcare',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyA_MockApiKey_PawCare_Windows',
-    appId: '1:123456789:web:pawcare2026',
-    messagingSenderId: '123456789',
+    apiKey: 'AIzaSyAH9XONxkgbRLS4_rXfsGeYqDE4ibfYg0Q',
+    appId: '1:187713861534:web:a1fb286484f61e6ce3488f',
+    messagingSenderId: '187713861534',
     projectId: 'pawcare-app-2026',
-    storageBucket: 'pawcare-app-2026.appspot.com',
+    storageBucket: 'pawcare-app-2026.firebasestorage.app',
   );
 }

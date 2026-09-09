@@ -9,11 +9,13 @@ import '../../../utils/date_helpers.dart';
 class ReminderPillCard extends StatefulWidget {
   final Reminder reminder;
   final Function(Reminder) onToggleComplete;
+  final Function(Reminder)? onTapCard;
 
   const ReminderPillCard({
     super.key,
     required this.reminder,
     required this.onToggleComplete,
+    this.onTapCard,
   });
 
   @override
@@ -80,8 +82,10 @@ class _ReminderPillCardState extends State<ReminderPillCard>
         ),
         ScaleTransition(
           scale: _scaleAnimation,
-          child: Container(
-            width: 240,
+          child: GestureDetector(
+            onTap: widget.onTapCard != null ? () => widget.onTapCard!(widget.reminder) : null,
+            child: Container(
+              width: 240,
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
               color: isCompleted
@@ -203,7 +207,8 @@ class _ReminderPillCardState extends State<ReminderPillCard>
             ),
           ),
         ),
-      ],
+      ),
+    ],
     );
   }
 

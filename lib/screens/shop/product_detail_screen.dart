@@ -4,6 +4,7 @@ import '../../models/product_model.dart';
 import '../../providers/ecosystem_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import 'cart_screen.dart';
 
 class ProductDetailScreen extends StatelessWidget {
   final MarketplaceProduct product;
@@ -24,6 +25,88 @@ class ProductDetailScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => Navigator.of(context).pop(),
+        ),
+        actions: [
+          IconButton(
+            tooltip: 'View Cart',
+            icon: Badge(
+              label: Text(ecoProvider.cart.length.toString()),
+              isLabelVisible: ecoProvider.cart.isNotEmpty,
+              backgroundColor: AppColors.alertCoral,
+              child: const Icon(Icons.shopping_bag_outlined),
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CartScreen()),
+              );
+            },
+          ),
+        ],
+      ),
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 52,
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.canopy,
+                      side: const BorderSide(color: AppColors.canopy),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                    onPressed: () {
+                      ecoProvider.addToCart(product);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('"${product.title}" added to cart! 🛍️'),
+                          backgroundColor: AppColors.mossAccent,
+                          duration: const Duration(seconds: 1),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.add_shopping_cart_rounded, size: 18),
+                    label: const Text('Add to Cart'),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: SizedBox(
+                  height: 52,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryTerracotta,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      elevation: 0,
+                    ),
+                    onPressed: () {
+                      ecoProvider.addToCart(product);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const CartScreen()),
+                      );
+                    },
+                    child: const Text('Buy Now', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       body: SingleChildScrollView(
@@ -92,7 +175,7 @@ class ProductDetailScreen extends StatelessWidget {
 
             // Price tag
             Text(
-              '₹${product.price}',
+              '₹${product.price.toStringAsFixed(0)}',
               style: AppTypography.numericData.copyWith(
                 fontSize: 28,
                 color: AppColors.clayPrimary,
@@ -117,26 +200,6 @@ class ProductDetailScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 40),
-
-            // Buy / Add to Cart Button
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  ecoProvider.addToCart(product);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('"${product.title}" added to your cart! 🛍️'),
-                      backgroundColor: AppColors.mossAccent,
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.add_shopping_cart_rounded, color: Colors.white),
-                label: const Text('Add to Cart'),
-              ),
-            ),
           ],
         ),
       ),

@@ -1,13 +1,15 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../models/expense_model.dart';
-import '../../models/pet_model.dart';
+import '../../models/product_model.dart';
 import '../../providers/ecosystem_provider.dart';
 import '../../providers/pet_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../../widgets/pet_switcher_pill.dart';
+import 'cart_screen.dart';
+import 'orders_list_screen.dart';
+import 'product_detail_screen.dart';
 
 class ShopHubScreen extends StatefulWidget {
   const ShopHubScreen({super.key});
@@ -16,110 +18,143 @@ class ShopHubScreen extends StatefulWidget {
   State<ShopHubScreen> createState() => _ShopHubScreenState();
 }
 
-class _ShopHubScreenState extends State<ShopHubScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  final _expenseTitleController = TextEditingController();
-  final _expenseAmountController = TextEditingController();
-  String _selectedCategory = 'food';
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-  }
+class _ShopHubScreenState extends State<ShopHubScreen> {
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
+  String _selectedCategory = 'all';
 
   @override
   void dispose() {
-    _tabController.dispose();
-    _expenseTitleController.dispose();
-    _expenseAmountController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
-  void _addExpenseLog(String petId) {
-    final title = _expenseTitleController.text.trim();
-    final amount = double.tryParse(_expenseAmountController.text) ?? 0.0;
-    if (title.isEmpty || amount <= 0) return;
-
-    final exp = Expense(
-      id: 'exp_${DateTime.now().millisecondsSinceEpoch}',
-      petId: petId,
-      category: _selectedCategory,
-      title: title,
-      amount: amount,
-      date: DateTime.now(),
-    );
-
-    Provider.of<EcosystemProvider>(context, listen: false).addExpense(exp);
-    _expenseTitleController.clear();
-    _expenseAmountController.clear();
-    Navigator.of(context).pop();
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Expense logged successfully! 💸'),
-        backgroundColor: AppColors.mossAccent,
-      ),
-    );
-  }
-
-  void _showAddExpenseSheet(String petId) {
+  void _showCartSheet(BuildContext context, EcosystemProvider ecoProvider) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.creamBase,
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 24,
-            right: 24,
-            top: 24,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Log Expense 💸', style: AppTypography.displaySmall),
-              const SizedBox(height: 14),
-              DropdownButtonFormField<String>(
-                value: _selectedCategory,
-                decoration: const InputDecoration(labelText: 'Expense Category'),
-                items: const [
-                  DropdownMenuItem(value: 'food', child: Text('Food & Treats')),
-                  DropdownMenuItem(value: 'vet', child: Text('Vet Services')),
-                  DropdownMenuItem(value: 'medicine', child: Text('Medicine & Pills')),
-                  DropdownMenuItem(value: 'accessories', child: Text('Collars & Accessories')),
+      builder: (ctx) {
+        return Consumer<EcosystemProvider>(
+          builder: (context, provider, _) {
+            final cartItems = provider.cart;
+            final total = provider.cartTotal;
+            final petProvider = Provider.of<PetProvider>(context, listen: false);
+            final activePet = petProvider.activePet;
+
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: AppColors.dividerColor,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Your Pet Care Cart 🛍️', style: AppTypography.displaySmall),
+                      Text('${cartItems.length} items', style: AppTypography.bodySmall),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  if (cartItems.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 32),
+                      child: Center(
+                        child: Text('Your cart is empty', style: AppTypography.bodyMedium),
+                      ),
+                    )
+                  else
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: cartItems.length,
+                      separatorBuilder: (_, __) => const Divider(height: 16, color: AppColors.dividerColor),
+                      itemBuilder: (c, idx) {
+                        final product = cartItems[idx];
+                        return Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(product.title, style: AppTypography.labelLarge.copyWith(fontSize: 13)),
+                                  Text('₹${product.price.toStringAsFixed(0)}', style: AppTypography.bodySmall),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.remove_circle_outline, size: 20),
+                              onPressed: () => provider.removeSingleFromCart(product.id),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.add_circle_outline, size: 20),
+                              onPressed: () => provider.addToCart(product),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  const SizedBox(height: 16),
+                  if (cartItems.isNotEmpty) ...[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Total Amount:', style: AppTypography.labelLarge),
+                        Text('₹${total.toStringAsFixed(0)}', style: AppTypography.displaySmall.copyWith(fontSize: 20, color: AppColors.primaryTerracotta)),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryTerracotta,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                        ),
+                        onPressed: () async {
+                          final petId = activePet?.id ?? 'default_pet';
+                          await provider.checkoutCart(petId);
+                          if (ctx.mounted) {
+                            Navigator.pop(ctx);
+                          }
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Order placed successfully! 🐾 Your items are on the way!'),
+                                backgroundColor: AppColors.pistachioSecondary,
+                              ),
+                            );
+                          }
+                        },
+                        child: const Text('Checkout & Place Order'),
+                      ),
+                    ),
+                  ],
                 ],
-                onChanged: (val) {
-                  if (val != null) setState(() => _selectedCategory = val);
-                },
               ),
-              const SizedBox(height: 14),
-              TextField(
-                controller: _expenseTitleController,
-                decoration: const InputDecoration(labelText: 'Description / Item name'),
-              ),
-              const SizedBox(height: 14),
-              TextField(
-                controller: _expenseAmountController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(labelText: 'Amount (₹)'),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: () => _addExpenseLog(petId),
-                  child: const Text('Add Expense'),
-                ),
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
@@ -128,303 +163,422 @@ class _ShopHubScreenState extends State<ShopHubScreen> with SingleTickerProvider
   @override
   Widget build(BuildContext context) {
     final ecoProvider = Provider.of<EcosystemProvider>(context);
-    final petProvider = Provider.of<PetProvider>(context);
-    final activePet = petProvider.activePet;
+    final allProducts = ecoProvider.products;
+    final cartCount = ecoProvider.cart.length;
+
+    final filtered = allProducts.where((p) {
+      final matchesSearch = _searchQuery.isEmpty || p.title.toLowerCase().contains(_searchQuery.toLowerCase());
+      final matchesCat = _selectedCategory == 'all' || p.category.toLowerCase() == _selectedCategory.toLowerCase();
+      return matchesSearch && matchesCat;
+    }).toList();
 
     return Scaffold(
       backgroundColor: AppColors.creamBase,
-      appBar: AppBar(
-        title: const Text('Ecosystem Shop & Budget 🛍️'),
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: AppColors.clayPrimary,
-          unselectedLabelColor: AppColors.softTaupe,
-          indicatorColor: AppColors.clayPrimary,
-          tabs: const [
-            Tab(text: 'MARKETPLACE'),
-            Tab(text: 'BUDGET LOG'),
-            Tab(text: 'ANALYTICS'),
-          ],
-        ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildMarketplaceTab(ecoProvider, activePet),
-          _buildBudgetTab(ecoProvider, activePet?.id ?? 'default'),
-          _buildAnalyticsTab(ecoProvider),
-        ],
-      ),
-    );
-  }
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Header
+            _buildHeader(context, ecoProvider),
 
-  Widget _buildMarketplaceTab(EcosystemProvider ecoProvider, Pet? activePet) {
-    final products = ecoProvider.products;
-    final cart = ecoProvider.cart;
+            // Scrollable Content
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 1. Curated For Your Pet Hero Banner
+                    _buildCuratedHeroBanner(cartCount, () => _showCartSheet(context, ecoProvider)),
+                    const SizedBox(height: 18),
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.all(20),
-              itemCount: products.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 14),
-              itemBuilder: (context, index) {
-                final prod = products[index];
-                return Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: AppColors.dividerColor),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 72,
-                        height: 72,
-                        decoration: BoxDecoration(
-                          color: AppColors.creamSurface,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: const Icon(Icons.shopping_bag_outlined, color: AppColors.clayPrimary),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(prod.title, style: AppTypography.labelLarge),
-                            const SizedBox(height: 2),
-                            Text('₹${prod.price}', style: AppTypography.numericData.copyWith(color: AppColors.clayPrimary)),
-                          ],
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          ecoProvider.addToCart(prod);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Item added to cart! 🐾'),
-                              duration: Duration(seconds: 1),
+                    // 2. Search & Filter Bar
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            height: 46,
+                            decoration: BoxDecoration(
+                              color: AppColors.cardBg,
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(color: AppColors.dividerColor),
                             ),
-                          );
-                        },
-                        icon: const Icon(Icons.add_shopping_cart_rounded, color: AppColors.clayPrimary),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-          if (cart.isNotEmpty)
-            Container(
-              padding: const EdgeInsets.all(20),
-              color: Colors.white,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('${cart.length} Items in Cart', style: AppTypography.labelLarge),
-                  ElevatedButton(
-                    onPressed: () {
-                      ecoProvider.checkoutCart(activePet?.id ?? 'default');
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text('Checkout completed! Order placed successfully. 🎉'),
-                          backgroundColor: AppColors.mossAccent,
+                            child: TextField(
+                              controller: _searchController,
+                              style: AppTypography.bodyMedium.copyWith(fontSize: 13),
+                              decoration: const InputDecoration(
+                                hintText: 'Search food, grooming, medicine...',
+                                prefixIcon: Icon(Icons.search_rounded, size: 20, color: AppColors.softTaupe),
+                                border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              ),
+                              onChanged: (val) => setState(() => _searchQuery = val),
+                            ),
+                          ),
                         ),
-                      );
-                    },
-                    child: const Text('Checkout Cart'),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
+                        const SizedBox(width: 8),
+                        IconButton(
+                          icon: Badge(
+                            label: Text(cartCount.toString()),
+                            isLabelVisible: cartCount > 0,
+                            backgroundColor: AppColors.alertCoral,
+                            child: const Icon(Icons.shopping_bag_outlined, color: AppColors.inkText),
+                          ),
+                          onPressed: () => _showCartSheet(context, ecoProvider),
+                          style: IconButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            shape: const CircleBorder(),
+                            side: const BorderSide(color: AppColors.dividerColor),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
 
-  Widget _buildBudgetTab(EcosystemProvider ecoProvider, String petId) {
-    final expenses = ecoProvider.expenses;
-
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: AppColors.clayPrimary,
-        foregroundColor: Colors.white,
-        onPressed: () => _showAddExpenseSheet(petId),
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Log Expense'),
-      ),
-      body: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            margin: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.clayPrimary, Color(0xFFEA8E5D)],
-              ),
-              borderRadius: BorderRadius.circular(28),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Total Monthly Budget', style: AppTypography.displaySmall.copyWith(color: Colors.white, fontSize: 18)),
-                Text('₹${ecoProvider.grandTotal}', style: AppTypography.numericData.copyWith(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w700)),
-              ],
-            ),
-          ),
-          Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              itemCount: expenses.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 10),
-              itemBuilder: (context, index) {
-                final exp = expenses[index];
-                return Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.dividerColor),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    // 3. Category Filter Chips
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
                         children: [
-                          Text(exp.title, style: AppTypography.labelLarge),
-                          Text(exp.category.toUpperCase(), style: AppTypography.bodySmall),
+                          _buildCategoryFilterChip('All', 'all'),
+                          const SizedBox(width: 8),
+                          _buildCategoryFilterChip('Nutrition', 'food'),
+                          const SizedBox(width: 8),
+                          _buildCategoryFilterChip('Accessories', 'accessories'),
+                          const SizedBox(width: 8),
+                          _buildCategoryFilterChip('Grooming', 'grooming'),
+                          const SizedBox(width: 8),
+                          _buildCategoryFilterChip('Pharma', 'medicine'),
                         ],
                       ),
-                      Text('₹${exp.amount}', style: AppTypography.numericData.copyWith(color: AppColors.alertCoral)),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+                    ),
+                    const SizedBox(height: 18),
 
-  Widget _buildAnalyticsTab(EcosystemProvider ecoProvider) {
-    final food = ecoProvider.getCategoryTotal('food');
-    final vet = ecoProvider.getCategoryTotal('vet');
-    final medicine = ecoProvider.getCategoryTotal('medicine');
-    final acc = ecoProvider.getCategoryTotal('accessories');
+                    // 4. Products Grid Section
+                    Text(
+                      'JUNGLE-TESTED FAVORITES',
+                      style: AppTypography.labelSmall.copyWith(
+                        color: AppColors.primaryTerracotta,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text('Recommended for your pet', style: AppTypography.displaySmall.copyWith(fontSize: 20)),
+                    const SizedBox(height: 12),
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Expense Share Analysis', style: AppTypography.displaySmall),
-          const SizedBox(height: 20),
-          Center(
-            child: SizedBox(
-              width: 180,
-              height: 180,
-              child: CustomPaint(
-                painter: ExpensePieChartPainter(
-                  food: food,
-                  vet: vet,
-                  medicine: medicine,
-                  accessories: acc,
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: filtered.length,
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 0.72,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                      ),
+                      itemBuilder: (ctx, index) {
+                        final product = filtered[index];
+                        return _buildProductCard(context, product, ecoProvider);
+                      },
+                    ),
+                    const SizedBox(height: 36),
+                  ],
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 24),
-          _buildPieLegend('Food & Treats (Clay)', AppColors.clayPrimary, food),
-          _buildPieLegend('Vet Services (Moss)', AppColors.mossAccent, vet),
-          _buildPieLegend('Medicines (Coral)', AppColors.alertCoral, medicine),
-          _buildPieLegend('Accessories (Taupe)', AppColors.softTaupe, acc),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildPieLegend(String label, Color color, double amount) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+  Widget _buildHeader(BuildContext context, EcosystemProvider ecoProvider) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.creamBase,
+        border: Border(
+          bottom: BorderSide(color: AppColors.dividerColor.withValues(alpha: 0.8), width: 1),
+        ),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             children: [
-              Container(width: 14, height: 14, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: AppColors.canopy,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.shopping_bag_rounded, color: Colors.white, size: 20),
+              ),
               const SizedBox(width: 10),
-              Text(label, style: AppTypography.bodyMedium),
+              Text(
+                'Paw Store',
+                style: AppTypography.displaySmall.copyWith(fontSize: 16, fontWeight: FontWeight.w700),
+              ),
             ],
           ),
-          Text('₹$amount', style: AppTypography.numericData),
+          Row(
+            children: [
+              IconButton(
+                tooltip: 'My Orders',
+                icon: const Icon(Icons.receipt_long_rounded, color: AppColors.canopy),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const OrdersListScreen(),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(width: 4),
+              const PetSwitcherPill(),
+            ],
+          ),
         ],
       ),
     );
   }
-}
 
-class ExpensePieChartPainter extends CustomPainter {
-  final double food;
-  final double vet;
-  final double medicine;
-  final double accessories;
-
-  ExpensePieChartPainter({
-    required this.food,
-    required this.vet,
-    required this.medicine,
-    required this.accessories,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final total = food + vet + medicine + accessories;
-    if (total == 0) return;
-
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = min(size.width / 2, size.height / 2);
-    final rect = Rect.fromCircle(center: center, radius: radius);
-
-    final pFood = (food / total) * 2 * pi;
-    final pVet = (vet / total) * 2 * pi;
-    final pMed = (medicine / total) * 2 * pi;
-    final pAcc = (accessories / total) * 2 * pi;
-
-    final paint = Paint()
-      ..style = PaintingStyle.fill
-      ..isAntiAlias = true;
-
-    double startAngle = -pi / 2;
-
-    // Draw Food
-    paint.color = AppColors.clayPrimary;
-    canvas.drawArc(rect, startAngle, pFood, true, paint);
-    startAngle += pFood;
-
-    // Draw Vet
-    paint.color = AppColors.mossAccent;
-    canvas.drawArc(rect, startAngle, pVet, true, paint);
-    startAngle += pVet;
-
-    // Draw Med
-    paint.color = AppColors.alertCoral;
-    canvas.drawArc(rect, startAngle, pMed, true, paint);
-    startAngle += pMed;
-
-    // Draw Accessories
-    paint.color = AppColors.softTaupe;
-    canvas.drawArc(rect, startAngle, pAcc, true, paint);
+  Widget _buildCuratedHeroBanner(int cartCount, VoidCallback onCartTap) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppColors.canopy,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.canopy.withValues(alpha: 0.25),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Opacity(
+                opacity: 0.35,
+                child: Image.asset(
+                  'assets/images/pet-care-shop.jpg',
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.buttercreamAccent,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Text(
+                      'Free express delivery over ₹499',
+                      style: AppTypography.labelSmall.copyWith(color: AppColors.canopy, fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Pawsome Essentials\nDelivered Fresh 📦',
+                    style: AppTypography.displayMedium.copyWith(color: Colors.white, fontSize: 20),
+                  ),
+                  const SizedBox(height: 14),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const CartScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.shopping_cart_rounded, size: 16),
+                    label: Text(cartCount > 0 ? 'View Cart ($cartCount)' : 'View Cart'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryTerracotta,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  Widget _buildCategoryFilterChip(String label, String value) {
+    final isSelected = _selectedCategory == value;
+    return InkWell(
+      onTap: () => setState(() => _selectedCategory = value),
+      borderRadius: BorderRadius.circular(18),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.canopy : AppColors.cardBg,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: isSelected ? AppColors.canopy : AppColors.dividerColor),
+        ),
+        child: Text(
+          label,
+          style: AppTypography.labelSmall.copyWith(
+            color: isSelected ? Colors.white : AppColors.inkText,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProductCard(BuildContext context, MarketplaceProduct product, EcosystemProvider ecoProvider) {
+    return InkWell(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => ProductDetailScreen(product: product)),
+        );
+      },
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.cardBg,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.dividerColor),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.canopy.withValues(alpha: 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image Preview & Category Tag
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  color: AppColors.creamSurface,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                child: Stack(
+                  children: [
+                    Center(
+                      child: Icon(
+                        _getProductIcon(product.category),
+                        size: 40,
+                        color: AppColors.primaryTerracotta.withValues(alpha: 0.7),
+                      ),
+                    ),
+                    Positioned(
+                      left: 10,
+                      top: 10,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          product.category.toUpperCase(),
+                          style: AppTypography.labelSmall.copyWith(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.inkText,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Product Details
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTypography.labelLarge.copyWith(fontSize: 12.5, height: 1.2),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(Icons.star_rounded, size: 14, color: AppColors.primaryGlow),
+                      const SizedBox(width: 3),
+                      Text('${product.rating}', style: AppTypography.bodySmall.copyWith(fontSize: 11)),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '₹${product.price.toStringAsFixed(0)}',
+                        style: AppTypography.displaySmall.copyWith(fontSize: 15, fontWeight: FontWeight.w800),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.add_circle_outline_rounded, color: AppColors.primaryTerracotta, size: 22),
+                        onPressed: () {
+                          ecoProvider.addToCart(product);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Added ${product.title} to cart 🛍️'),
+                              duration: const Duration(seconds: 1),
+                              backgroundColor: AppColors.primaryTerracotta,
+                            ),
+                          );
+                        },
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  IconData _getProductIcon(String category) {
+    switch (category.toLowerCase()) {
+      case 'food':
+        return Icons.restaurant_rounded;
+      case 'accessories':
+        return Icons.watch_rounded;
+      case 'grooming':
+        return Icons.brush_rounded;
+      case 'medicine':
+        return Icons.medical_services_rounded;
+      default:
+        return Icons.shopping_bag_rounded;
+    }
+  }
 }

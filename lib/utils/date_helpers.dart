@@ -5,6 +5,14 @@ class DateHelpers {
     return DateFormat('h:mm a').format(time);
   }
 
+  static String formatDate(DateTime date) {
+    return DateFormat('MMM d, yyyy').format(date);
+  }
+
+  static String formatDayOfWeek(DateTime date) {
+    return DateFormat('EEEE').format(date);
+  }
+
   static String formatDateShort(DateTime date) {
     return DateFormat('EEE, MMM d').format(date);
   }

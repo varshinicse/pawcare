@@ -4,7 +4,7 @@ class Pet {
   final String id;
   final String ownerId;
   final String name;
-  final String species; // "dog", "cat", etc.
+  final String species; // "dog", "cat", "bird", "fish", "rabbit", "reptile", "other"
   final String breed;
   final double age; // years
   final double weightKg;
@@ -13,7 +13,7 @@ class Pet {
   final String avatarAsset;
   final DateTime createdAt;
 
-  // New Enterprise Ecosystem Fields
+  // Identity & Profile Fields
   final String gender;
   final DateTime birthdate;
   final String color;
@@ -23,6 +23,13 @@ class Pet {
   final String qrCode;
   final String emergencyContact;
   final List<String> gallery;
+
+  // Owner & Special Care Information
+  final String ownerName;
+  final String ownerPhone;
+  final String ownerEmail;
+  final String specialCareInstructions;
+  final String notes;
 
   Pet({
     required this.id,
@@ -45,6 +52,11 @@ class Pet {
     this.qrCode = '',
     this.emergencyContact = '+919876543210',
     this.gallery = const [],
+    this.ownerName = 'Pet Shop Owner',
+    this.ownerPhone = '+91 98765 43210',
+    this.ownerEmail = 'owner@pawcare.com',
+    this.specialCareInstructions = '',
+    this.notes = '',
   }) : birthdate = birthdate ?? DateTime.now().subtract(const Duration(days: 365));
 
   Map<String, dynamic> toMap() {
@@ -69,6 +81,11 @@ class Pet {
       'qrCode': qrCode,
       'emergencyContact': emergencyContact,
       'gallery': gallery,
+      'ownerName': ownerName,
+      'ownerPhone': ownerPhone,
+      'ownerEmail': ownerEmail,
+      'specialCareInstructions': specialCareInstructions,
+      'notes': notes,
     };
   }
 
@@ -95,7 +112,7 @@ class Pet {
       id: docId.isNotEmpty ? docId : (map['id'] ?? ''),
       ownerId: map['ownerId'] ?? '',
       name: map['name'] ?? 'Pet',
-      species: map['species'] ?? 'dog',
+      species: (map['species'] ?? 'dog').toString().toLowerCase(),
       breed: map['breed'] ?? 'Mixed',
       age: (map['age'] as num?)?.toDouble() ?? 1.0,
       weightKg: (map['weightKg'] as num?)?.toDouble() ?? 5.0,
@@ -112,6 +129,11 @@ class Pet {
       qrCode: map['qrCode'] ?? '',
       emergencyContact: map['emergencyContact'] ?? '+919876543210',
       gallery: List<String>.from(map['gallery'] ?? []),
+      ownerName: map['ownerName'] ?? 'Pet Shop Owner',
+      ownerPhone: map['ownerPhone'] ?? '+91 98765 43210',
+      ownerEmail: map['ownerEmail'] ?? 'owner@pawcare.com',
+      specialCareInstructions: map['specialCareInstructions'] ?? '',
+      notes: map['notes'] ?? '',
     );
   }
 
@@ -136,6 +158,11 @@ class Pet {
     String? qrCode,
     String? emergencyContact,
     List<String>? gallery,
+    String? ownerName,
+    String? ownerPhone,
+    String? ownerEmail,
+    String? specialCareInstructions,
+    String? notes,
   }) {
     return Pet(
       id: id ?? this.id,
@@ -158,6 +185,11 @@ class Pet {
       qrCode: qrCode ?? this.qrCode,
       emergencyContact: emergencyContact ?? this.emergencyContact,
       gallery: gallery ?? this.gallery,
+      ownerName: ownerName ?? this.ownerName,
+      ownerPhone: ownerPhone ?? this.ownerPhone,
+      ownerEmail: ownerEmail ?? this.ownerEmail,
+      specialCareInstructions: specialCareInstructions ?? this.specialCareInstructions,
+      notes: notes ?? this.notes,
     );
   }
 }

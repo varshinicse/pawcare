@@ -9,6 +9,8 @@ class PetSelectorHeader extends StatelessWidget {
   final Pet? activePet;
   final Function(Pet) onSelectPet;
   final VoidCallback onAddPetPressed;
+  final VoidCallback? onManagePetsPressed;
+  final Function(Pet)? onOpenPetHub;
 
   const PetSelectorHeader({
     super.key,
@@ -16,6 +18,8 @@ class PetSelectorHeader extends StatelessWidget {
     required this.activePet,
     required this.onSelectPet,
     required this.onAddPetPressed,
+    this.onManagePetsPressed,
+    this.onOpenPetHub,
   });
 
   @override
@@ -25,18 +29,28 @@ class PetSelectorHeader extends StatelessWidget {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 4),
-        itemCount: pets.length + 1,
+        itemCount: pets.length + (onManagePetsPressed != null ? 2 : 1),
         separatorBuilder: (_, __) => const SizedBox(width: 10),
         itemBuilder: (context, index) {
           if (index == pets.length) {
             return _buildAddPetChip();
           }
 
+          if (index == pets.length + 1) {
+            return _buildManagePetsChip();
+          }
+
           final pet = pets[index];
           final isSelected = activePet?.id == pet.id;
 
           return GestureDetector(
-            onTap: () => onSelectPet(pet),
+            onTap: () {
+              if (isSelected && onOpenPetHub != null) {
+                onOpenPetHub!(pet);
+              } else {
+                onSelectPet(pet);
+              }
+            },
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -82,6 +96,10 @@ class PetSelectorHeader extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
+                  if (isSelected) ...[
+                    const SizedBox(width: 6),
+                    const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Colors.white),
+                  ],
                 ],
               ),
             ),
@@ -110,6 +128,33 @@ class PetSelectorHeader extends StatelessWidget {
               style: AppTypography.labelMedium.copyWith(
                 color: AppColors.inkText,
                 fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildManagePetsChip() {
+    return GestureDetector(
+      onTap: onManagePetsPressed,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(26),
+          border: Border.all(color: AppColors.clayPrimary.withValues(alpha: 0.5), width: 1.5),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.grid_view_rounded, size: 16, color: AppColors.clayPrimary),
+            const SizedBox(width: 6),
+            Text(
+              'My Pets',
+              style: AppTypography.labelMedium.copyWith(
+                color: AppColors.clayPrimary,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],

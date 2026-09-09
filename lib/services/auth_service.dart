@@ -115,6 +115,16 @@ class AuthService {
     }
   }
 
+  /// Check whether an active session is persisted
+  Future<bool> hasActiveSession() async {
+    if (!_isMock && currentUser != null) {
+      return true;
+    }
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString(_mockUserKey);
+    return email != null && email.isNotEmpty;
+  }
+
   /// Sign Out
   Future<void> signOut() async {
     if (!_isMock) {

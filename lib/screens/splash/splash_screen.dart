@@ -1,9 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../providers/auth_provider.dart';
+import '../../providers/pet_provider.dart';
+import '../../providers/ecosystem_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../auth/login_screen.dart';
+import '../ecosystem_tabs_hub.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -37,9 +42,26 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    // Navigate to Login Screen after 2.2 seconds
-    _navigationTimer = Timer(const Duration(milliseconds: 2200), () {
-      if (mounted) {
+    // Check existing session after splash animation
+    _navigationTimer = Timer(const Duration(milliseconds: 2200), () async {
+      if (!mounted) return;
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final hasSession = await authProvider.checkSession();
+
+      if (!mounted) return;
+      if (hasSession) {
+        Provider.of<PetProvider>(context, listen: false).loadPets();
+        Provider.of<EcosystemProvider>(context, listen: false).loadEcosystemData();
+        Navigator.of(context).pushReplacement(
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => const EcosystemTabsHub(),
+            transitionsBuilder: (_, animation, __, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+            transitionDuration: const Duration(milliseconds: 300),
+          ),
+        );
+      } else {
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
             pageBuilder: (_, __, ___) => const LoginScreen(),

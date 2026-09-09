@@ -11,10 +11,26 @@ class PetProvider with ChangeNotifier {
 
   List<Pet> get pets => _pets;
   Pet? get activePet => _activePet;
+  String? get activePetId => _activePet?.id;
   bool get isLoading => _isLoading;
 
   PetProvider() {
     loadPets();
+  }
+
+  Pet? getPetById(String id) {
+    try {
+      return _pets.firstWhere((p) => p.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void selectPetById(String id) {
+    final pet = getPetById(id);
+    if (pet != null) {
+      selectPet(pet);
+    }
   }
 
   Future<void> loadPets() async {
@@ -23,7 +39,11 @@ class PetProvider with ChangeNotifier {
 
     _pets = await _firestoreService.getPetsOnce('default_user');
     if (_pets.isNotEmpty) {
-      _activePet = _pets.first;
+      final savedActiveId = await _firestoreService.loadActivePetId();
+      final matched = _pets.where((p) => p.id == savedActiveId).toList();
+      _activePet = matched.isNotEmpty ? matched.first : _pets.first;
+    } else {
+      _activePet = null;
     }
     _isLoading = false;
     notifyListeners();
@@ -32,6 +52,7 @@ class PetProvider with ChangeNotifier {
   void selectPet(Pet pet) {
     _activePet = pet;
     notifyListeners();
+    _firestoreService.saveActivePetId(pet.id);
   }
 
   Future<void> addPet(Pet pet) async {
@@ -41,6 +62,7 @@ class PetProvider with ChangeNotifier {
     await _firestoreService.addPet(pet);
     _pets.add(pet);
     _activePet = pet;
+    await _firestoreService.saveActivePetId(pet.id);
 
     _isLoading = false;
     notifyListeners();
@@ -55,6 +77,23 @@ class PetProvider with ChangeNotifier {
         _activePet = pet;
       }
     }
+    notifyListeners();
+  }
+
+  Future<void> deletePet(String petId) async {
+    _isLoading = true;
+    notifyListeners();
+
+    await _firestoreService.deletePet(petId);
+    _pets.removeWhere((p) => p.id == petId);
+    if (_activePet?.id == petId) {
+      _activePet = _pets.isNotEmpty ? _pets.first : null;
+      if (_activePet != null) {
+        await _firestoreService.saveActivePetId(_activePet!.id);
+      }
+    }
+
+    _isLoading = false;
     notifyListeners();
   }
 }

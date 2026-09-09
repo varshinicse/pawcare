@@ -32,6 +32,22 @@ class HealthRecordProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> updateRecord(HealthRecord record) async {
+    await _firestoreService.updateHealthRecord(record);
+    final index = _records.indexWhere((r) => r.id == record.id);
+    if (index != -1) {
+      _records[index] = record;
+      _records.sort((a, b) => b.date.compareTo(a.date));
+    }
+    notifyListeners();
+  }
+
+  Future<void> deleteRecord(String recordId) async {
+    await _firestoreService.deleteHealthRecord(recordId);
+    _records.removeWhere((r) => r.id == recordId);
+    notifyListeners();
+  }
+
   /// Simulates generating a PDF Health Card and triggers a notification/alert download in UI
   Future<String> generatePdfHealthCard(String petName) async {
     await Future.delayed(const Duration(milliseconds: 900));

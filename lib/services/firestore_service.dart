@@ -6,9 +6,9 @@ import '../models/reminder_model.dart';
 import '../models/health_record_model.dart';
 import '../models/post_model.dart';
 import '../models/adoption_model.dart';
-import '../models/lost_pet_model.dart';
 import '../models/product_model.dart';
 import '../models/order_model.dart';
+import '../models/care_history_model.dart';
 import '../firebase_options.dart';
 
 class FirestoreService {
@@ -34,9 +34,10 @@ class FirestoreService {
   static const String _prefsHealthRecordsKey = 'pawcare_mock_health_records';
   static const String _prefsPostsKey = 'pawcare_mock_posts';
   static const String _prefsAdoptionsKey = 'pawcare_mock_adoptions';
-  static const String _prefsLostPetsKey = 'pawcare_mock_lost_pets';
   static const String _prefsOrdersKey = 'pawcare_mock_orders';
   static const String _prefsCartKey = 'pawcare_mock_cart';
+  static const String _prefsActivePetIdKey = 'pawcare_active_pet_id';
+  static const String _prefsCareHistoryKey = 'pawcare_mock_care_history';
 
   // --- Default Static Mock Seeds ---
   final List<Pet> _defaultMockPets = [
@@ -195,16 +196,51 @@ class FirestoreService {
     ),
   ];
 
-  final List<LostPetAlert> _defaultMockLostPets = [
-    LostPetAlert(
-      id: 'lost_1',
-      petName: 'Rocky',
-      species: 'dog',
-      breed: 'German Shepherd',
-      lastSeenLocation: 'Bellandur lake path',
-      dateLost: DateTime.now().subtract(const Duration(days: 2)),
-      rewardAmount: '₹5,000',
-      contactNumber: '+919876543212',
+  final List<CareHistory> _defaultMockCareHistory = [
+    CareHistory(
+      id: 'ch_1',
+      petId: 'pet_bruno_1',
+      reminderId: 'rem_1',
+      activityType: 'feeding',
+      title: 'Morning Breakfast & Kibble',
+      description: '1.5 cups dry kibble + fresh warm water consumed happily.',
+      completedAt: DateTime.now().subtract(const Duration(hours: 2)),
+    ),
+    CareHistory(
+      id: 'ch_2',
+      petId: 'pet_bruno_1',
+      reminderId: null,
+      activityType: 'walking',
+      title: 'Morning Park Walk',
+      description: '30 min walk around the neighborhood. Very active and energetic.',
+      completedAt: DateTime.now().subtract(const Duration(hours: 4)),
+    ),
+    CareHistory(
+      id: 'ch_3',
+      petId: 'pet_bruno_1',
+      reminderId: null,
+      activityType: 'grooming',
+      title: 'Undercoat Brushing',
+      description: 'Groomed coat thoroughly, shed hair removed.',
+      completedAt: DateTime.now().subtract(const Duration(days: 1, hours: 3)),
+    ),
+    CareHistory(
+      id: 'ch_4',
+      petId: 'pet_luna_2',
+      reminderId: null,
+      activityType: 'feeding',
+      title: 'Salmon Pate Meal',
+      description: 'Whiskas wet salmon food finished completely.',
+      completedAt: DateTime.now().subtract(const Duration(hours: 1)),
+    ),
+    CareHistory(
+      id: 'ch_5',
+      petId: 'pet_luna_2',
+      reminderId: null,
+      activityType: 'litter_cleaning',
+      title: 'Litter Box Cleaning',
+      description: 'Litter scooped and refreshed with fresh clumping sand.',
+      completedAt: DateTime.now().subtract(const Duration(hours: 5)),
     ),
   ];
 
@@ -253,6 +289,8 @@ class FirestoreService {
       final map = r.toMap();
       map['scheduledTime'] = r.scheduledTime.toIso8601String();
       map['completedAt'] = r.completedAt?.toIso8601String();
+      map['createdAt'] = r.createdAt.toIso8601String();
+      map['updatedAt'] = r.updatedAt.toIso8601String();
       return map;
     }).toList();
     await prefs.setString(_prefsRemindersKey, json.encode(serialized));
@@ -275,9 +313,36 @@ class FirestoreService {
     final serialized = list.map((hr) {
       final map = hr.toMap();
       map['date'] = hr.date.toIso8601String();
+      map['createdAt'] = hr.createdAt.toIso8601String();
+      map['updatedAt'] = hr.updatedAt.toIso8601String();
       return map;
     }).toList();
     await prefs.setString(_prefsHealthRecordsKey, json.encode(serialized));
+  }
+
+  Future<List<CareHistory>> _loadCareHistory(String petId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final data = prefs.getString(_prefsCareHistoryKey);
+    final List<CareHistory> allHistory;
+    if (data == null) {
+      allHistory = List<CareHistory>.from(_defaultMockCareHistory);
+      await _saveCareHistory(allHistory);
+    } else {
+      final List decoded = json.decode(data);
+      allHistory = decoded.map((item) => CareHistory.fromMap(item, item['id'] ?? '')).toList();
+    }
+    return petId.isEmpty ? allHistory : allHistory.where((c) => c.petId == petId).toList();
+  }
+
+  Future<void> _saveCareHistory(List<CareHistory> list) async {
+    final prefs = await SharedPreferences.getInstance();
+    final serialized = list.map((c) {
+      final map = c.toMap();
+      map['completedAt'] = c.completedAt.toIso8601String();
+      map['createdAt'] = c.createdAt.toIso8601String();
+      return map;
+    }).toList();
+    await prefs.setString(_prefsCareHistoryKey, json.encode(serialized));
   }
 
   Future<List<CommunityPost>> _loadPosts() async {
@@ -318,28 +383,6 @@ class FirestoreService {
     final prefs = await SharedPreferences.getInstance();
     final serialized = list.map((a) => a.toMap()).toList();
     await prefs.setString(_prefsAdoptionsKey, json.encode(serialized));
-  }
-
-  Future<List<LostPetAlert>> _loadLostPets() async {
-    final prefs = await SharedPreferences.getInstance();
-    final data = prefs.getString(_prefsLostPetsKey);
-    if (data == null) {
-      final list = List<LostPetAlert>.from(_defaultMockLostPets);
-      await _saveLostPets(list);
-      return list;
-    }
-    final List decoded = json.decode(data);
-    return decoded.map((item) => LostPetAlert.fromMap(item, item['id'] ?? '')).toList();
-  }
-
-  Future<void> _saveLostPets(List<LostPetAlert> list) async {
-    final prefs = await SharedPreferences.getInstance();
-    final serialized = list.map((lp) {
-      final map = lp.toMap();
-      map['dateLost'] = lp.dateLost.toIso8601String();
-      return map;
-    }).toList();
-    await prefs.setString(_prefsLostPetsKey, json.encode(serialized));
   }
 
   Future<List<OrderRecord>> _loadOrders() async {
@@ -492,6 +535,16 @@ class FirestoreService {
       list.removeWhere((p) => p.id == petId);
       await _savePets(list);
     }
+  }
+
+  Future<void> saveActivePetId(String id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_prefsActivePetIdKey, id);
+  }
+
+  Future<String?> loadActivePetId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_prefsActivePetIdKey);
   }
 
   // --- REMINDER CRUD ---
@@ -706,6 +759,164 @@ class FirestoreService {
     }
   }
 
+  Future<void> updateHealthRecord(HealthRecord record) async {
+    if (_isMock) {
+      final list = await _loadAllHealthRecords();
+      final index = list.indexWhere((h) => h.id == record.id);
+      if (index != -1) {
+        list[index] = record;
+        await _saveHealthRecords(list);
+      }
+      return;
+    }
+    try {
+      final db = _db;
+      if (db == null) {
+        final list = await _loadAllHealthRecords();
+        final index = list.indexWhere((h) => h.id == record.id);
+        if (index != -1) {
+          list[index] = record;
+          await _saveHealthRecords(list);
+        }
+        return;
+      }
+      await db.collection('health_records').doc(record.id).update(record.toMap());
+    } catch (_) {
+      final list = await _loadAllHealthRecords();
+      final index = list.indexWhere((h) => h.id == record.id);
+      if (index != -1) {
+        list[index] = record;
+        await _saveHealthRecords(list);
+      }
+    }
+  }
+
+  Future<void> deleteHealthRecord(String recordId) async {
+    if (_isMock) {
+      final list = await _loadAllHealthRecords();
+      list.removeWhere((h) => h.id == recordId);
+      await _saveHealthRecords(list);
+      return;
+    }
+    try {
+      final db = _db;
+      if (db == null) {
+        final list = await _loadAllHealthRecords();
+        list.removeWhere((h) => h.id == recordId);
+        await _saveHealthRecords(list);
+        return;
+      }
+      await db.collection('health_records').doc(recordId).delete();
+    } catch (_) {
+      final list = await _loadAllHealthRecords();
+      list.removeWhere((h) => h.id == recordId);
+      await _saveHealthRecords(list);
+    }
+  }
+
+  // --- CARE HISTORY CRUD ---
+
+  Stream<List<CareHistory>> getCareHistoryStream(String petId) {
+    if (_isMock) {
+      return Stream.fromFuture(_loadCareHistory(petId));
+    }
+    try {
+      final db = _db;
+      if (db == null) return Stream.fromFuture(_loadCareHistory(petId));
+      return db
+          .collection('care_history')
+          .snapshots()
+          .map((snapshot) {
+            final list = snapshot.docs
+                .map((doc) => CareHistory.fromMap(doc.data(), doc.id))
+                .where((c) => petId.isEmpty || c.petId == petId)
+                .toList();
+            return list.isEmpty
+                ? _defaultMockCareHistory.where((c) => petId.isEmpty || c.petId == petId).toList()
+                : list;
+          });
+    } catch (_) {
+      return Stream.fromFuture(_loadCareHistory(petId));
+    }
+  }
+
+  Future<List<CareHistory>> getCareHistoryOnce(String petId) async {
+    if (_isMock) {
+      final list = await _loadCareHistory(petId);
+      list.sort((a, b) => b.completedAt.compareTo(a.completedAt));
+      return list;
+    }
+    try {
+      final db = _db;
+      if (db == null) {
+        final list = await _loadCareHistory(petId);
+        list.sort((a, b) => b.completedAt.compareTo(a.completedAt));
+        return list;
+      }
+      final snapshot = await db.collection('care_history').where('petId', isEqualTo: petId).get();
+      if (snapshot.docs.isEmpty) {
+        final list = await _loadCareHistory(petId);
+        list.sort((a, b) => b.completedAt.compareTo(a.completedAt));
+        return list;
+      }
+      final list = snapshot.docs.map((doc) => CareHistory.fromMap(doc.data(), doc.id)).toList();
+      list.sort((a, b) => b.completedAt.compareTo(a.completedAt));
+      return list;
+    } catch (_) {
+      final list = await _loadCareHistory(petId);
+      list.sort((a, b) => b.completedAt.compareTo(a.completedAt));
+      return list;
+    }
+  }
+
+  Future<void> addCareHistory(CareHistory record) async {
+    if (_isMock) {
+      final list = await _loadCareHistory('');
+      list.insert(0, record);
+      await _saveCareHistory(list);
+      return;
+    }
+    try {
+      final db = _db;
+      if (db == null) {
+        final list = await _loadCareHistory('');
+        list.insert(0, record);
+        await _saveCareHistory(list);
+        return;
+      }
+      final docRef = db.collection('care_history').doc();
+      final newRecord = record.copyWith(id: docRef.id);
+      await docRef.set(newRecord.toMap());
+    } catch (_) {
+      final list = await _loadCareHistory('');
+      list.insert(0, record);
+      await _saveCareHistory(list);
+    }
+  }
+
+  Future<void> deleteCareHistory(String historyId) async {
+    if (_isMock) {
+      final list = await _loadCareHistory('');
+      list.removeWhere((c) => c.id == historyId);
+      await _saveCareHistory(list);
+      return;
+    }
+    try {
+      final db = _db;
+      if (db == null) {
+        final list = await _loadCareHistory('');
+        list.removeWhere((c) => c.id == historyId);
+        await _saveCareHistory(list);
+        return;
+      }
+      await db.collection('care_history').doc(historyId).delete();
+    } catch (_) {
+      final list = await _loadCareHistory('');
+      list.removeWhere((c) => c.id == historyId);
+      await _saveCareHistory(list);
+    }
+  }
+
   // --- SOCIAL POSTS CRUD ---
 
   Future<List<CommunityPost>> getPostsOnce() async {
@@ -817,47 +1028,6 @@ class FirestoreService {
       final list = await _loadAdoptions();
       list.insert(0, listing);
       await _saveAdoptions(list);
-    }
-  }
-
-  // --- LOST PET CRUD ---
-
-  Future<List<LostPetAlert>> getLostPetsOnce() async {
-    if (_isMock) {
-      return _loadLostPets();
-    }
-    try {
-      final db = _db;
-      if (db == null) return _loadLostPets();
-      final snapshot = await db.collection('lost_pets').get();
-      return snapshot.docs.map((doc) => LostPetAlert.fromMap(doc.data(), doc.id)).toList();
-    } catch (_) {
-      return _loadLostPets();
-    }
-  }
-
-  Future<void> addLostPetAlert(LostPetAlert alert) async {
-    if (_isMock) {
-      final list = await _loadLostPets();
-      list.insert(0, alert);
-      await _saveLostPets(list);
-      return;
-    }
-    try {
-      final db = _db;
-      if (db == null) {
-        final list = await _loadLostPets();
-        list.insert(0, alert);
-        await _saveLostPets(list);
-        return;
-      }
-      final docRef = db.collection('lost_pets').doc();
-      final newAlert = alert.copyWith(id: docRef.id);
-      await docRef.set(newAlert.toMap());
-    } catch (_) {
-      final list = await _loadLostPets();
-      list.insert(0, alert);
-      await _saveLostPets(list);
     }
   }
 
