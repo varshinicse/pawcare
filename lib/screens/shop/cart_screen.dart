@@ -4,6 +4,7 @@ import '../../models/product_model.dart';
 import '../../providers/ecosystem_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../../widgets/pet_background_wrapper.dart';
 import 'checkout_screen.dart';
 
 class CartScreen extends StatelessWidget {
@@ -106,38 +107,41 @@ class CartScreen extends StatelessWidget {
                 ),
               ),
             ),
-      body: cartItems.isEmpty
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.shopping_cart_outlined, size: 64, color: AppColors.softTaupe),
-                    const SizedBox(height: 16),
-                    Text('Your Cart is Empty', style: AppTypography.displaySmall.copyWith(fontSize: 20)),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Explore nutritious pet food, accessories, and grooming essentials in our Shop.',
-                      style: AppTypography.bodySmall,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.canopy,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      body: PetBackgroundWrapper(
+        imagePath: 'assets/images/cat_avatar_luna.jpg',
+        imageOpacity: 0.12,
+        child: cartItems.isEmpty
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.shopping_cart_outlined, size: 64, color: AppColors.softTaupe),
+                      const SizedBox(height: 16),
+                      Text('Your Cart is Empty', style: AppTypography.displaySmall.copyWith(fontSize: 20)),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Explore nutritious pet food, accessories, and grooming essentials in our Shop.',
+                        style: AppTypography.bodySmall,
+                        textAlign: TextAlign.center,
                       ),
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Start Shopping'),
-                    ),
-                  ],
+                      const SizedBox(height: 24),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.canopy,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Start Shopping'),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
+              )
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -259,6 +263,7 @@ class CartScreen extends StatelessWidget {
                 ],
               ),
             ),
+      ),
     );
   }
 

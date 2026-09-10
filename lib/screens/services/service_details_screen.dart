@@ -87,7 +87,6 @@ class ServiceDetailsScreen extends StatelessWidget {
             // HERO BANNER
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: AppColors.canopy,
                 borderRadius: BorderRadius.circular(28),
@@ -99,9 +98,41 @@ class ServiceDetailsScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(28),
+                child: Stack(
+                  children: [
+                    if (service.imageAsset != null)
+                      Positioned.fill(
+                        child: Opacity(
+                          opacity: 0.35,
+                          child: Image.asset(
+                            service.imageAsset!,
+                            fit: BoxFit.cover,
+                            alignment: Alignment.center,
+                            errorBuilder: (_, __, ___) => const SizedBox(),
+                          ),
+                        ),
+                      ),
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              AppColors.canopy.withValues(alpha: 0.92),
+                              AppColors.canopy.withValues(alpha: 0.7),
+                            ],
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -160,7 +191,11 @@ class ServiceDetailsScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    ),
+    const SizedBox(height: 24),
 
             // OVERVIEW
             Text('About This Service', style: AppTypography.displaySmall.copyWith(fontSize: 18)),

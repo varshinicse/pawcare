@@ -140,8 +140,14 @@ class _AdoptionListingsScreenState extends State<AdoptionListingsScreen> {
               decoration: BoxDecoration(
                 color: AppColors.clayLight,
                 borderRadius: BorderRadius.circular(20),
-                image: const DecorationImage(
-                  image: AssetImage('assets/images/pets-community.jpg'),
+                image: DecorationImage(
+                  image: AssetImage(
+                    listing.species.toLowerCase() == 'cat'
+                        ? 'assets/images/cat_avatar_luna.jpg'
+                        : listing.petName.toLowerCase().contains('milo')
+                            ? 'assets/images/cute_puppy_pajamas.jpg'
+                            : 'assets/images/adoption_rescue_pup.jpg',
+                  ),
                   fit: BoxFit.cover,
                 ),
               ),

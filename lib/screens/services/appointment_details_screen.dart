@@ -11,33 +11,34 @@ class AppointmentDetailsScreen extends StatelessWidget {
 
   const AppointmentDetailsScreen({super.key, required this.appointment});
 
-  void _showRescheduleDialog(BuildContext context) {
-    DateTime newDate = appointment.dateTime.add(const Duration(days: 1));
+  void _showRescheduleDialog(BuildContext context) async {
+    final newDate = appointment.dateTime.add(const Duration(days: 1));
 
-    showDatePicker(
+    final selected = await showDatePicker(
       context: context,
       initialDate: newDate,
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 90)),
-    ).then((selected) async {
-      if (selected != null) {
-        final updated = appointment.copyWith(
-          dateTime: selected,
-          status: 'Upcoming',
+    );
+
+    if (selected != null && context.mounted) {
+      final updated = appointment.copyWith(
+        dateTime: selected,
+        status: 'Upcoming',
+      );
+      await Provider.of<AppointmentProvider>(context, listen: false).updateAppointment(updated);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Appointment rescheduled to ${DateHelpers.formatDate(selected)}.'),
+            backgroundColor: AppColors.pistachioSecondary,
+          ),
         );
-        await Provider.of<AppointmentProvider>(context, listen: false).updateAppointment(updated);
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Appointment rescheduled to ${DateHelpers.formatDate(selected)}.'),
-              backgroundColor: AppColors.mossAccent,
-            ),
-          );
-          Navigator.of(context).pop();
-        }
+        Navigator.of(context).pop();
       }
-    });
+    }
   }
+
 
   void _confirmCancel(BuildContext context) {
     showDialog(

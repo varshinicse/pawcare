@@ -219,55 +219,62 @@ class _EcosystemTabsHubState extends State<EcosystemTabsHub> {
         index: _currentIndex,
         children: screens,
       ),
-      bottomNavigationBar: Container(
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        decoration: BoxDecoration(
-          color: AppColors.canopy,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.canopy.withValues(alpha: 0.35),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavPill(
-              index: 0,
-              icon: Icons.home_rounded,
-              label: 'Home',
-              isSelected: _currentIndex == 0,
-            ),
-            _buildNavPill(
-              index: 1,
-              icon: Icons.favorite_rounded,
-              label: 'Health',
-              isSelected: _currentIndex == 1,
-            ),
-            _buildNavPill(
-              index: 2,
-              icon: Icons.auto_awesome_rounded,
-              label: 'AI Center',
-              isSelected: _currentIndex == 2,
-            ),
-            _buildNavPill(
-              index: 3,
-              icon: Icons.people_alt_rounded,
-              label: 'Social',
-              isSelected: _currentIndex == 3,
-            ),
-            _buildNavPill(
-              index: 4,
-              icon: Icons.shopping_bag_rounded,
-              label: 'Shop',
-              isSelected: _currentIndex == 4,
-              badgeCount: cartCount,
-            ),
-          ],
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+          decoration: BoxDecoration(
+            color: AppColors.canopy,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.canopy.withValues(alpha: 0.35),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNavPill(
+                index: 0,
+                icon: Icons.home_rounded,
+                selectedIcon: Icons.home_filled,
+                label: 'Home',
+                isSelected: _currentIndex == 0,
+              ),
+              _buildNavPill(
+                index: 1,
+                icon: Icons.favorite_border_rounded,
+                selectedIcon: Icons.favorite_rounded,
+                label: 'Health',
+                isSelected: _currentIndex == 1,
+              ),
+              _buildNavPill(
+                index: 2,
+                icon: Icons.auto_awesome_outlined,
+                selectedIcon: Icons.auto_awesome_rounded,
+                label: 'AI Center',
+                isSelected: _currentIndex == 2,
+              ),
+              _buildNavPill(
+                index: 3,
+                icon: Icons.people_outline_rounded,
+                selectedIcon: Icons.people_alt_rounded,
+                label: 'Social',
+                isSelected: _currentIndex == 3,
+              ),
+              _buildNavPill(
+                index: 4,
+                icon: Icons.shopping_bag_outlined,
+                selectedIcon: Icons.shopping_bag_rounded,
+                label: 'Shop',
+                isSelected: _currentIndex == 4,
+                badgeCount: cartCount,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -276,53 +283,71 @@ class _EcosystemTabsHubState extends State<EcosystemTabsHub> {
   Widget _buildNavPill({
     required int index,
     required IconData icon,
+    required IconData selectedIcon,
     required String label,
     required bool isSelected,
     int badgeCount = 0,
   }) {
     return InkWell(
       onTap: () => _switchTab(index),
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(20),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
         padding: EdgeInsets.symmetric(
-          horizontal: isSelected ? 12 : 8,
-          vertical: 6,
+          horizontal: isSelected ? 14 : 10,
+          vertical: 7,
         ),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.primaryTerracotta : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.primaryTerracotta.withValues(alpha: 0.4),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ]
+              : null,
         ),
-        child: Column(
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             badgeCount > 0
                 ? Badge(
-                    label: Text(badgeCount.toString()),
+                    label: Text(
+                      badgeCount > 9 ? '9+' : badgeCount.toString(),
+                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                    ),
                     backgroundColor: AppColors.alertCoral,
                     child: Icon(
-                      icon,
+                      isSelected ? selectedIcon : icon,
                       size: 20,
                       color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.65),
                     ),
                   )
                 : Icon(
-                    icon,
+                    isSelected ? selectedIcon : icon,
                     size: 20,
                     color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.65),
                   ),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              style: AppTypography.labelSmall.copyWith(
-                fontSize: 10,
-                color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.65),
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+            if (isSelected) ...[
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: AppTypography.labelSmall.copyWith(
+                  fontSize: 11,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.2,
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),
     );
   }
 }
+

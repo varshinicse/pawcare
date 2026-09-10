@@ -101,7 +101,7 @@ class _EditReminderScreenState extends State<EditReminderScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 DropdownButtonFormField<String>(
-                  value: _selectedType,
+                  initialValue: _selectedType,
                   decoration: const InputDecoration(labelText: 'Reminder Category'),
                   items: const [
                     DropdownMenuItem(value: 'feeding', child: Text('Feeding Routine 🥣')),
@@ -183,7 +183,7 @@ class _EditReminderScreenState extends State<EditReminderScreen> {
                 const SizedBox(height: 14),
 
                 DropdownButtonFormField<String>(
-                  value: _selectedRepeat,
+                  initialValue: _selectedRepeat,
                   decoration: const InputDecoration(labelText: 'Repeat Interval'),
                   items: const [
                     DropdownMenuItem(value: 'none', child: Text('One-time Only')),
@@ -199,8 +199,11 @@ class _EditReminderScreenState extends State<EditReminderScreen> {
 
                 TextFormField(
                   controller: _notesController,
-                  maxLines: 2,
-                  decoration: const InputDecoration(labelText: 'Notes / Dosage / Instructions', prefixIcon: Icon(Icons.note_alt_outlined)),
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                    labelText: 'Notes / Instructions',
+                    prefixIcon: Icon(Icons.notes_rounded),
+                  ),
                 ),
                 const SizedBox(height: 28),
 
@@ -214,7 +217,7 @@ class _EditReminderScreenState extends State<EditReminderScreen> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                     ),
                     onPressed: _save,
-                    child: const Text('Save Reminder Changes ⏰'),
+                    child: const Text('Update Reminder ⏰'),
                   ),
                 ),
               ],

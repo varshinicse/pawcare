@@ -7,6 +7,7 @@ import '../../providers/reminder_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../utils/date_helpers.dart';
+import '../../widgets/pet_background_wrapper.dart';
 import '../reminders/reminder_detail_screen.dart';
 import 'appointment_details_screen.dart';
 
@@ -44,7 +45,10 @@ class _CareScheduleScreenState extends State<CareScheduleScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: Column(
+      body: PetBackgroundWrapper(
+        imagePath: 'assets/images/dog_beach_play.jpg',
+        imageOpacity: 0.12,
+        child: Column(
         children: [
           // 7-DAY HORIZONTAL SELECTOR
           Container(
@@ -142,7 +146,6 @@ class _CareScheduleScreenState extends State<CareScheduleScreen> {
                   if (dayReminders.isEmpty && dayAppointments.isEmpty)
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(32),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(22),
@@ -150,21 +153,37 @@ class _CareScheduleScreenState extends State<CareScheduleScreen> {
                       ),
                       child: Column(
                         children: [
-                          const Icon(Icons.event_available_rounded, size: 48, color: AppColors.softTaupe),
-                          const SizedBox(height: 12),
-                          Text('No schedule items for this day.', style: AppTypography.displaySmall.copyWith(fontSize: 16)),
-                          const SizedBox(height: 4),
-                          Text('Relax! All care tasks and appointments are clear.', style: AppTypography.bodySmall),
+                          ClipRRect(
+                            borderRadius: const BorderRadius.vertical(top: Radius.circular(21)),
+                            child: Image.asset(
+                              'assets/images/cozy_cat_cuddle.jpg',
+                              height: 140,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              children: [
+                                Text('All clear for today! 💤', style: AppTypography.displaySmall.copyWith(fontSize: 16)),
+                                const SizedBox(height: 4),
+                                Text('Relax! No pending tasks or appointments scheduled.', style: AppTypography.bodySmall),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     )
                   else
                     ...dayReminders.map((rem) => _buildReminderRow(context, rem)),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

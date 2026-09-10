@@ -12,6 +12,7 @@ class ServiceItem {
   final List<String> includedFeatures;
   final IconData icon;
   final String tag;
+  final String? imageAsset;
 
   const ServiceItem({
     required this.id,
@@ -25,6 +26,7 @@ class ServiceItem {
     required this.includedFeatures,
     required this.icon,
     this.tag = 'Popular',
+    this.imageAsset,
   });
 
   static const List<ServiceItem> defaultCatalog = [
@@ -37,6 +39,7 @@ class ServiceItem {
       rating: 4.9,
       reviewsCount: 142,
       tag: 'Best Seller',
+      imageAsset: 'assets/images/pet_spa_grooming.jpg',
       description:
           'A complete luxury grooming experience including therapeutic warm bubble bath, deep coat conditioning, paw pad sanitization, nail trimming, gentle ear cleansing, and scented finishing spritz.',
       includedFeatures: [
@@ -57,6 +60,7 @@ class ServiceItem {
       rating: 4.95,
       reviewsCount: 230,
       tag: 'Essential',
+      imageAsset: 'assets/images/vet_clinical_service.jpg',
       description:
           'Detailed physical consultation with certified veterinary doctors. Includes cardiovascular, joint, dermatological, and dental examination along with tailored dietary advice.',
       includedFeatures: [
@@ -73,6 +77,7 @@ class ServiceItem {
       title: 'Core Booster Vaccination (DHPP/Rabies)',
       category: 'Vaccination',
       price: 850.0,
+      imageAsset: 'assets/images/vet_clinical_service.jpg',
       durationMinutes: 20,
       rating: 4.88,
       reviewsCount: 98,

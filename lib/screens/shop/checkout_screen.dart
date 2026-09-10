@@ -192,20 +192,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   border: Border.all(color: AppColors.dividerColor),
                 ),
                 child: Column(
-                  children: ['UPI / Google Pay', 'Credit / Debit Card', 'Cash on Delivery']
-                      .map((method) {
-                    final isSel = _paymentMethod == method;
-                    return RadioListTile<String>(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(method, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                      value: method,
-                      groupValue: _paymentMethod,
-                      activeColor: AppColors.canopy,
-                      onChanged: (val) {
-                        if (val != null) setState(() => _paymentMethod = val);
-                      },
-                    );
-                  }).toList(),
+                  children: [
+                    _buildPaymentOption('UPI / Google Pay', Icons.account_balance_wallet_rounded),
+                    const Divider(height: 1),
+                    _buildPaymentOption('Credit / Debit Card', Icons.credit_card_rounded),
+                    const Divider(height: 1),
+                    _buildPaymentOption('Cash on Delivery', Icons.local_shipping_rounded),
+                  ],
                 ),
               ),
               const SizedBox(height: 24),
@@ -260,4 +253,46 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       ),
     );
   }
+
+  Widget _buildPaymentOption(String method, IconData icon) {
+    final isSelected = _paymentMethod == method;
+    return InkWell(
+      onTap: () => setState(() => _paymentMethod = method),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Icon(icon, size: 20, color: isSelected ? AppColors.canopy : AppColors.softTaupe),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                method,
+                style: TextStyle(
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  fontSize: 14,
+                  color: isSelected ? AppColors.inkText : AppColors.softTaupe,
+                ),
+              ),
+            ),
+            Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected ? AppColors.canopy : AppColors.dividerColor,
+                  width: 2,
+                ),
+                color: isSelected ? AppColors.canopy : Colors.transparent,
+              ),
+              child: isSelected
+                  ? const Icon(Icons.check, size: 12, color: Colors.white)
+                  : null,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
+

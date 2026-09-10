@@ -5,6 +5,7 @@ import '../../providers/appointment_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../utils/date_helpers.dart';
+import '../../widgets/pet_background_wrapper.dart';
 import 'appointment_details_screen.dart';
 
 class AppointmentsListScreen extends StatefulWidget {
@@ -38,78 +39,82 @@ class _AppointmentsListScreenState extends State<AppointmentsListScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: Column(
-        children: [
-          // FILTER CHIPS
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            child: Row(
-              children: _filters.map((f) {
-                final isSel = _selectedFilter == f;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: ChoiceChip(
-                    label: Text(f),
-                    selected: isSel,
-                    onSelected: (val) {
-                      if (val) setState(() => _selectedFilter = f);
-                    },
-                    selectedColor: AppColors.canopy,
-                    backgroundColor: Colors.white,
-                    labelStyle: TextStyle(
-                      color: isSel ? Colors.white : AppColors.inkText,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(
-                        color: isSel ? AppColors.canopy : AppColors.dividerColor,
+      body: PetBackgroundWrapper(
+        imagePath: 'assets/images/cute_puppy_pajamas.jpg',
+        imageOpacity: 0.12,
+        child: Column(
+          children: [
+            // FILTER CHIPS
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: Row(
+                children: _filters.map((f) {
+                  final isSel = _selectedFilter == f;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text(f),
+                      selected: isSel,
+                      onSelected: (val) {
+                        if (val) setState(() => _selectedFilter = f);
+                      },
+                      selectedColor: AppColors.canopy,
+                      backgroundColor: Colors.white,
+                      labelStyle: TextStyle(
+                        color: isSel ? Colors.white : AppColors.inkText,
+                        fontWeight: isSel ? FontWeight.bold : FontWeight.w500,
+                        fontSize: 13,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: BorderSide(
+                          color: isSel ? AppColors.canopy : AppColors.dividerColor,
+                        ),
                       ),
                     ),
-                  ),
-                );
-              }).toList(),
+                  );
+                }).toList(),
+              ),
             ),
-          ),
 
-          // LIST
-          Expanded(
-            child: filtered.isEmpty
-                ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(32),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.event_busy_rounded, size: 56, color: AppColors.softTaupe),
-                          const SizedBox(height: 14),
-                          Text(
-                            'No $_selectedFilter Appointments',
-                            style: AppTypography.displaySmall.copyWith(fontSize: 18),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            'Book a new service appointment from the Services Catalog.',
-                            style: AppTypography.bodySmall,
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
+            // LIST
+            Expanded(
+              child: filtered.isEmpty
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.event_busy_rounded, size: 56, color: AppColors.softTaupe),
+                            const SizedBox(height: 14),
+                            Text(
+                              'No $_selectedFilter Appointments',
+                              style: AppTypography.displaySmall.copyWith(fontSize: 18),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Book a new service appointment from the Services Catalog.',
+                              style: AppTypography.bodySmall,
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
                       ),
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.all(20),
+                      itemCount: filtered.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 14),
+                      itemBuilder: (context, index) {
+                        final apt = filtered[index];
+                        return _buildAppointmentCard(context, apt);
+                      },
                     ),
-                  )
-                : ListView.separated(
-                    padding: const EdgeInsets.all(20),
-                    itemCount: filtered.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 14),
-                    itemBuilder: (context, index) {
-                      final apt = filtered[index];
-                      return _buildAppointmentCard(context, apt);
-                    },
-                  ),
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -66,9 +66,15 @@ class AdoptionDetailsScreen extends StatelessWidget {
             Container(
               width: double.infinity,
               height: 280,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage('assets/images/pets-community.jpg'),
+                  image: AssetImage(
+                    listing.species.toLowerCase() == 'cat'
+                        ? 'assets/images/cat_avatar_luna.jpg'
+                        : listing.petName.toLowerCase().contains('milo')
+                            ? 'assets/images/cute_puppy_pajamas.jpg'
+                            : 'assets/images/adoption_rescue_pup.jpg',
+                  ),
                   fit: BoxFit.cover,
                 ),
               ),

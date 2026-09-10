@@ -131,13 +131,134 @@ class _ServiceBookingScreenState extends State<ServiceBookingScreen> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // STEP 1: SELECT PET
-            Text('1. SELECT PET', style: AppTypography.labelMedium.copyWith(color: AppColors.softTaupe)),
+      body: Stack(
+        children: [
+          // Background Image with gentle ambient overlay
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.12,
+              child: Image.asset(
+                'assets/images/book_appointment_bg.jpg',
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              ),
+            ),
+          ),
+
+          // Scrollable Booking Content
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // SERVICE HERO BANNER WITH BACKGROUND IMAGE
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: AppColors.canopy,
+                    borderRadius: BorderRadius.circular(22),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.canopy.withValues(alpha: 0.2),
+                        blurRadius: 14,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(22),
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: Opacity(
+                            opacity: 0.38,
+                            child: Image.asset(
+                              'assets/images/book_appointment_bg.jpg',
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                            ),
+                          ),
+                        ),
+                        Positioned.fill(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppColors.canopy.withValues(alpha: 0.94),
+                                  AppColors.canopy.withValues(alpha: 0.65),
+                                ],
+                                begin: Alignment.bottomLeft,
+                                end: Alignment.topRight,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(18),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.buttercreamAccent,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      widget.service.category.toUpperCase(),
+                                      style: AppTypography.labelSmall.copyWith(
+                                        color: AppColors.canopy,
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 10,
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.schedule_rounded, color: Colors.white, size: 12),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          '${widget.service.durationMinutes} mins',
+                                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                widget.service.title,
+                                style: AppTypography.displayMedium.copyWith(color: Colors.white, fontSize: 18),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Compassionate, gentle care for your pet 🐾',
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: Colors.white.withValues(alpha: 0.85),
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 22),
+
+                // STEP 1: SELECT PET
+                Text('1. SELECT PET', style: AppTypography.labelMedium.copyWith(color: AppColors.softTaupe, fontWeight: FontWeight.w800)),
             const SizedBox(height: 10),
             if (pets.isEmpty)
               Container(
@@ -342,6 +463,8 @@ class _ServiceBookingScreenState extends State<ServiceBookingScreen> {
             const SizedBox(height: 30),
           ],
         ),
+      ),
+        ],
       ),
     );
   }

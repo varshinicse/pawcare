@@ -4,6 +4,7 @@ import '../../models/pet_model.dart';
 import '../../providers/pet_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../../widgets/pet_background_wrapper.dart';
 import 'submodules/pet_profile_submodule.dart';
 import 'submodules/pet_health_submodule.dart';
 import 'submodules/pet_care_history_submodule.dart';
@@ -176,7 +177,10 @@ class _PetProfileHubScreenState extends State<PetProfileHubScreen> with SingleTi
             ),
         ],
       ),
-      body: Column(
+      body: PetBackgroundWrapper(
+        imagePath: 'assets/images/cat_dog_friends.jpg',
+        imageOpacity: 0.12,
+        child: Column(
         children: [
           // TOP PET IDENTITY BANNER
           Padding(
@@ -322,8 +326,9 @@ class _PetProfileHubScreenState extends State<PetProfileHubScreen> with SingleTi
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   IconData _getSpeciesIcon(String species) {
     switch (species.toLowerCase()) {

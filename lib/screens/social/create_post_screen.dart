@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../models/post_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/ecosystem_provider.dart';
 import '../../providers/pet_provider.dart';
@@ -48,9 +47,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
     setState(() => _isPublishing = true);
 
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final userName = authProvider.userName.isNotEmpty ? authProvider.userName : 'Pet Parent';
-
     String fullCaption = caption;
     if (_selectedPetTag != null && _selectedPetTag!.isNotEmpty) {
       fullCaption = '[$_selectedCategory | with $_selectedPetTag]\n$caption';
@@ -58,16 +54,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       fullCaption = '[$_selectedCategory]\n$caption';
     }
 
-    final newPost = CommunityPost(
-      id: 'post_${DateTime.now().millisecondsSinceEpoch}',
-      ownerName: userName,
-      ownerAvatar: userName.isNotEmpty ? userName[0].toUpperCase() : 'P',
-      imagePath: 'assets/images/bruno-jungle.jpg',
-      caption: fullCaption,
-      likes: 0,
-      createdAt: DateTime.now(),
-      comments: [],
-    );
 
     await Provider.of<EcosystemProvider>(context, listen: false).createPost(fullCaption);
 
@@ -76,12 +62,13 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Post published to Community Feed! 🌟'),
-          backgroundColor: AppColors.mossAccent,
+          backgroundColor: AppColors.pistachioSecondary,
         ),
       );
       Navigator.of(context).pop();
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

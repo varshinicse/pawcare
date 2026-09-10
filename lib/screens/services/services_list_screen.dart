@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/service_item_model.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../../widgets/pet_background_wrapper.dart';
 import 'service_details_screen.dart';
 
 class ServicesListScreen extends StatefulWidget {
@@ -39,55 +40,60 @@ class _ServicesListScreenState extends State<ServicesListScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: Column(
-        children: [
-          // CATEGORY SELECTOR
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            child: Row(
-              children: _categories.map((cat) {
-                final isSel = _selectedCategory == cat;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: ChoiceChip(
-                    label: Text(cat),
-                    selected: isSel,
-                    onSelected: (val) {
-                      if (val) setState(() => _selectedCategory = cat);
-                    },
-                    selectedColor: AppColors.canopy,
-                    backgroundColor: Colors.white,
-                    labelStyle: TextStyle(
-                      color: isSel ? Colors.white : AppColors.inkText,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(
-                        color: isSel ? AppColors.canopy : AppColors.dividerColor,
+      body: PetBackgroundWrapper(
+        imagePath: 'assets/images/cat_dog_friends.jpg',
+        imageOpacity: 0.12,
+        child: Column(
+          children: [
+            // CATEGORY SELECTOR
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: Row(
+                children: _categories.map((cat) {
+                  final isSel = _selectedCategory == cat;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text(cat),
+                      selected: isSel,
+                      onSelected: (val) {
+                        if (val) setState(() => _selectedCategory = cat);
+                      },
+                      selectedColor: AppColors.canopy,
+                      backgroundColor: Colors.white,
+                      labelStyle: TextStyle(
+                        color: isSel ? Colors.white : AppColors.inkText,
+                        fontWeight: isSel ? FontWeight.bold : FontWeight.w500,
+                        fontSize: 13,
                       ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: BorderSide(
+                          color: isSel ? AppColors.canopy : AppColors.dividerColor,
+                        ),
+                      ),
+                      showCheckmark: false,
                     ),
-                  ),
-                );
-              }).toList(),
+                  );
+                }).toList(),
+              ),
             ),
-          ),
 
-          // LIST
-          Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.all(20),
-              itemCount: filtered.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 16),
-              itemBuilder: (context, index) {
-                final service = filtered[index];
-                return _buildServiceCard(context, service);
-              },
+            // LIST
+            Expanded(
+              child: ListView.separated(
+                padding: const EdgeInsets.all(20),
+                itemCount: filtered.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 16),
+                itemBuilder: (context, index) {
+                  final service = filtered[index];
+                  return _buildServiceCard(context, service);
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

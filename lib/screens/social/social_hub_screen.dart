@@ -6,6 +6,7 @@ import '../../models/post_model.dart';
 import '../../providers/ecosystem_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
+import '../../widgets/pet_background_wrapper.dart';
 import '../../widgets/pet_switcher_pill.dart';
 import 'adoption_details_screen.dart';
 import 'adoption_listings_screen.dart';
@@ -28,233 +29,99 @@ class _SocialHubScreenState extends State<SocialHubScreen> {
     super.dispose();
   }
 
-  void _showCreatePostSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (sheetContext) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 20,
-            bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: AppColors.dividerColor,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text('Share With The Pack 🐾', style: AppTypography.displaySmall),
-              const SizedBox(height: 14),
-              TextField(
-                controller: _postCaptionController,
-                maxLines: 4,
-                decoration: const InputDecoration(
-                  hintText: 'Share a story, milestone, photo update, or question with pet parents...',
-                ),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryTerracotta,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  ),
-                  onPressed: () {
-                    final text = _postCaptionController.text.trim();
-                    if (text.isNotEmpty) {
-                      Provider.of<EcosystemProvider>(context, listen: false).createPost(text);
-                      _postCaptionController.clear();
-                      Navigator.of(sheetContext).pop();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Story posted to community clearing! 🐾'),
-                          backgroundColor: AppColors.pistachioSecondary,
-                        ),
-                      );
-                    }
-                  },
-                  child: const Text('Post Story'),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _showAdoptionSheet(AdoptionListing pet) {
-    final contactController = TextEditingController();
-    final noteController = TextEditingController();
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (ctx) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 22,
-            right: 22,
-            top: 22,
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + 22,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Adopt ${pet.petName} 🐶', style: AppTypography.displaySmall),
-              const SizedBox(height: 6),
-              Text('${pet.breed} • ${pet.age} • ${pet.location}', style: AppTypography.bodySmall),
-              const SizedBox(height: 14),
-              TextField(
-                controller: contactController,
-                decoration: const InputDecoration(labelText: 'Your Contact Phone / Email *'),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: noteController,
-                maxLines: 2,
-                decoration: const InputDecoration(labelText: 'Living Situation / Pet Experience'),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.canopy,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                  ),
-                  onPressed: () {
-                    if (contactController.text.trim().isNotEmpty) {
-                      Navigator.pop(ctx);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Application for ${pet.petName} sent to ${pet.shelterName}! ❤️'),
-                          backgroundColor: AppColors.pistachioSecondary,
-                        ),
-                      );
-                    }
-                  },
-                  child: Text('Submit Adoption Request for ${pet.petName}'),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final ecoProvider = Provider.of<EcosystemProvider>(context);
+
     final posts = ecoProvider.posts;
     final adoptions = ecoProvider.adoptions;
 
     return Scaffold(
       backgroundColor: AppColors.creamBase,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            _buildHeader(context),
+      body: PetBackgroundWrapper(
+        imagePath: 'assets/images/pets-community.jpg',
+        imageOpacity: 0.12,
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Header
+              _buildHeader(context),
 
-            // Scrollable Feed
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Eyebrow & Title
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'THE PACK',
-                              style: AppTypography.labelSmall.copyWith(
+              // Scrollable Feed
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Eyebrow & Title
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'COMMUNITY & ADOPTION',
+                                style: AppTypography.labelSmall.copyWith(
+                                  color: AppColors.primaryTerracotta,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Paw Community 🐾',
+                                style: AppTypography.displayMedium.copyWith(fontSize: 22),
+                              ),
+                            ],
+                          ),
+                          TextButton.icon(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const CreatePostScreen(),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.add_circle, size: 18, color: AppColors.primaryTerracotta),
+                            label: const Text(
+                              'New Post',
+                              style: TextStyle(
                                 color: AppColors.primaryTerracotta,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.8,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
                               ),
                             ),
-                            const SizedBox(height: 2),
-                            Text('Community clearing', style: AppTypography.displayMedium.copyWith(fontSize: 24)),
-                          ],
-                        ),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const CreatePostScreen(),
-                              ),
-                            );
-                          },
-                          icon: const Icon(Icons.edit_note_rounded, size: 16),
-                          label: const Text('Share story'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryTerracotta,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                            textStyle: AppTypography.labelLarge.copyWith(fontSize: 12.5),
-                            elevation: 0,
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              backgroundColor: AppColors.buttercreamAccent,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Stories, advice, and new beginnings from pet families nearby.',
-                      style: AppTypography.bodySmall,
-                    ),
-                    const SizedBox(height: 16),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
 
-                    // 1. Featured Trail Story Banner
-                    _buildFeaturedStoryBanner(),
-                    const SizedBox(height: 20),
+                      // 1. Featured Story Banner ("Community Spotlight")
+                      _buildFeaturedStoryBanner(),
+                      const SizedBox(height: 20),
 
-                    // 2. Community Stories Feed
-                    _buildPostCardsList(ecoProvider, posts),
-                    const SizedBox(height: 20),
+                      // 2. Community Stories Feed
+                      _buildPostCardsList(ecoProvider, posts),
+                      const SizedBox(height: 20),
 
-                    // 3. Adoption Highlight ("Meet Milo" Banner)
-                    _buildAdoptionSection(adoptions),
-                    const SizedBox(height: 36),
-                  ],
+                      // 3. Adoption Highlight ("Meet Milo" Banner)
+                      _buildAdoptionSection(adoptions),
+                      const SizedBox(height: 36),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -317,7 +184,7 @@ class _SocialHubScreenState extends State<SocialHubScreen> {
           children: [
             Positioned.fill(
               child: Opacity(
-                opacity: 0.45,
+                opacity: 0.55,
                 child: Image.asset(
                   'assets/images/pets-community.jpg',
                   fit: BoxFit.cover,
@@ -330,8 +197,8 @@ class _SocialHubScreenState extends State<SocialHubScreen> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      AppColors.canopy.withValues(alpha: 0.95),
-                      Colors.transparent,
+                      AppColors.canopy.withValues(alpha: 0.90),
+                      AppColors.canopy.withValues(alpha: 0.25),
                     ],
                     begin: Alignment.bottomLeft,
                     end: Alignment.topRight,
@@ -482,6 +349,19 @@ class _SocialHubScreenState extends State<SocialHubScreen> {
                 ),
                 const SizedBox(height: 12),
                 Text(post.caption, style: AppTypography.bodyMedium),
+                if (post.imagePath.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.asset(
+                      post.imagePath,
+                      height: 180,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 12),
                 Row(
                   children: [

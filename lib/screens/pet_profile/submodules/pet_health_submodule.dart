@@ -8,7 +8,6 @@ import '../../../theme/app_typography.dart';
 import '../../../utils/date_helpers.dart';
 import '../../clinical/health_record_details_screen.dart';
 import '../../clinical/add_edit_health_record_screen.dart';
-import '../widgets/add_edit_health_record_dialog.dart';
 
 class PetHealthSubmodule extends StatefulWidget {
   final Pet pet;

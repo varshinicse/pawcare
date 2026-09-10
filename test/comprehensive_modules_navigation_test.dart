@@ -2,16 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:petcare/models/appointment_model.dart';
-import 'package:petcare/models/care_history_model.dart';
 import 'package:petcare/models/customer_model.dart';
-import 'package:petcare/models/health_record_model.dart';
 import 'package:petcare/models/pet_model.dart';
-import 'package:petcare/models/reminder_model.dart';
 import 'package:petcare/models/service_item_model.dart';
 import 'package:petcare/models/post_model.dart';
 import 'package:petcare/models/adoption_model.dart';
 import 'package:petcare/models/product_model.dart';
-import 'package:petcare/models/order_model.dart';
 import 'package:petcare/providers/appointment_provider.dart';
 import 'package:petcare/providers/auth_provider.dart';
 import 'package:petcare/providers/care_history_provider.dart';
@@ -25,27 +21,19 @@ import 'package:petcare/screens/customers/customer_pets_screen.dart';
 import 'package:petcare/screens/customers/customers_list_screen.dart';
 import 'package:petcare/screens/services/appointment_details_screen.dart';
 import 'package:petcare/screens/services/appointments_list_screen.dart';
-import 'package:petcare/screens/services/booking_confirmation_screen.dart';
-import 'package:petcare/screens/services/booking_success_screen.dart';
 import 'package:petcare/screens/services/care_schedule_screen.dart';
-import 'package:petcare/screens/services/service_booking_screen.dart';
 import 'package:petcare/screens/services/service_details_screen.dart';
-import 'package:petcare/screens/services/services_hub_screen.dart';
 import 'package:petcare/screens/services/services_list_screen.dart';
 import 'package:petcare/screens/shop/cart_screen.dart';
-import 'package:petcare/screens/shop/checkout_screen.dart';
-import 'package:petcare/screens/shop/order_details_screen.dart';
-import 'package:petcare/screens/shop/order_success_screen.dart';
 import 'package:petcare/screens/shop/orders_list_screen.dart';
 import 'package:petcare/screens/shop/product_detail_screen.dart';
-import 'package:petcare/screens/social/adoption_application_screen.dart';
-import 'package:petcare/screens/social/adoption_confirmation_screen.dart';
 import 'package:petcare/screens/social/adoption_details_screen.dart';
 import 'package:petcare/screens/social/adoption_listings_screen.dart';
 import 'package:petcare/screens/social/create_post_screen.dart';
 import 'package:petcare/screens/social/post_details_screen.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
+
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

@@ -80,7 +80,6 @@ class CustomerDetailsScreen extends StatelessWidget {
               // Customer Profile Header Card
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: AppColors.canopy,
                   borderRadius: BorderRadius.circular(24),
@@ -92,32 +91,68 @@ class CustomerDetailsScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Column(
-                  children: [
-                    Container(
-                      width: 64,
-                      height: 64,
-                      decoration: BoxDecoration(
-                        color: AppColors.pistachioSecondary,
-                        borderRadius: BorderRadius.circular(20),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: Opacity(
+                          opacity: 0.28,
+                          child: Image.asset(
+                            'assets/images/pet_owner_happy.jpg',
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                          ),
+                        ),
                       ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        customer.name.isNotEmpty ? customer.name[0].toUpperCase() : 'C',
-                        style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.pistachioDark),
+                      Positioned.fill(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AppColors.canopy.withValues(alpha: 0.95),
+                                AppColors.canopy.withValues(alpha: 0.70),
+                              ],
+                              begin: Alignment.bottomCenter,
+                              end: Alignment.topCenter,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      customer.name,
-                      style: AppTypography.displayMedium.copyWith(color: Colors.white, fontSize: 22),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Member since ${customer.joinedDate.year}',
-                      style: AppTypography.bodySmall.copyWith(color: Colors.white.withValues(alpha: 0.7)),
-                    ),
-                  ],
+                      Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Center(
+                          child: Column(
+                            children: [
+                              Container(
+                                width: 64,
+                                height: 64,
+                                decoration: BoxDecoration(
+                                  color: AppColors.pistachioSecondary,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  customer.name.isNotEmpty ? customer.name[0].toUpperCase() : 'C',
+                                  style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.pistachioDark),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                customer.name,
+                                style: AppTypography.displayMedium.copyWith(color: Colors.white, fontSize: 22),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Member since ${customer.joinedDate.year}',
+                                style: AppTypography.bodySmall.copyWith(color: Colors.white.withValues(alpha: 0.8)),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 20),

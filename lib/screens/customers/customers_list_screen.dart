@@ -3,7 +3,11 @@ import 'package:provider/provider.dart';
 import '../../models/customer_model.dart';
 import '../../providers/customer_provider.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_design_tokens.dart';
 import '../../theme/app_typography.dart';
+import '../../widgets/animated_paw_card.dart';
+import '../../widgets/empty_state.dart';
+import '../../widgets/paw_buttons.dart';
 import 'add_edit_customer_screen.dart';
 import 'customer_details_screen.dart';
 
@@ -45,23 +49,22 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
-          IconButton(
-            tooltip: 'Add New Customer',
-            icon: Container(
-              padding: const EdgeInsets.all(6),
-              decoration: const BoxDecoration(
-                color: AppColors.primaryTerracotta,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.add, color: Colors.white, size: 20),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: PawIconButton(
+              icon: Icons.add,
+              tooltip: 'Add New Customer',
+              backgroundColor: AppColors.primaryTerracotta,
+              iconColor: Colors.white,
+              size: 38,
+              iconSize: 20,
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const AddEditCustomerScreen()),
+                );
+              },
             ),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const AddEditCustomerScreen()),
-              );
-            },
           ),
-          const SizedBox(width: 8),
         ],
       ),
       body: SafeArea(
@@ -76,17 +79,27 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(color: AppColors.dividerColor),
+                  boxShadow: AppShadows.softSm,
                 ),
                 child: TextField(
                   controller: _searchController,
                   style: AppTypography.bodyMedium,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: 'Search by customer name, phone, email...',
-                    prefixIcon: Icon(Icons.search_rounded, color: AppColors.softTaupe),
+                    prefixIcon: const Icon(Icons.search_rounded, color: AppColors.softTaupe),
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear_rounded, size: 18, color: AppColors.softTaupe),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() => _searchQuery = '');
+                            },
+                          )
+                        : null,
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   ),
                   onChanged: (val) => setState(() => _searchQuery = val),
                 ),
@@ -98,16 +111,22 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
               child: customerProvider.isLoading
                   ? const Center(child: CircularProgressIndicator(color: AppColors.primaryTerracotta))
                   : filtered.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.person_search_rounded, size: 48, color: AppColors.softTaupe),
-                              const SizedBox(height: 12),
-                              Text('No customers found', style: AppTypography.displaySmall.copyWith(fontSize: 16)),
-                              const SizedBox(height: 6),
-                              Text('Tap + to register a new pet parent', style: AppTypography.bodySmall),
-                            ],
+                      ? Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: EmptyStateWidget(
+                            title: _searchQuery.isEmpty ? 'No customers registered' : 'No customers match "$_searchQuery"',
+                            description: _searchQuery.isEmpty
+                                ? 'Register your first customer and link their beloved pets to manage their records.'
+                                : 'Try searching for a different name, phone number, or email address.',
+                            icon: Icons.people_outline_rounded,
+                            buttonText: _searchQuery.isEmpty ? 'Add New Customer' : null,
+                            onButtonPressed: _searchQuery.isEmpty
+                                ? () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(builder: (_) => const AddEditCustomerScreen()),
+                                    );
+                                  }
+                                : null,
                           ),
                         )
                       : ListView.separated(
@@ -127,68 +146,62 @@ class _CustomersListScreenState extends State<CustomersListScreen> {
   }
 
   Widget _buildCustomerCard(BuildContext context, Customer customer) {
-    return InkWell(
+    return AnimatedPawCard(
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => CustomerDetailsScreen(customer: customer)),
         );
       },
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.cardBg,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.dividerColor),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.canopy.withValues(alpha: 0.04),
-              blurRadius: 12,
-              offset: const Offset(0, 3),
+      padding: const EdgeInsets.all(16),
+      borderRadius: AppRadius.xl,
+      child: Row(
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              gradient: AppColors.canopyGradient,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.canopy.withValues(alpha: 0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                )
+              ],
             ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: AppColors.canopy,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                customer.name.isNotEmpty ? customer.name[0].toUpperCase() : 'C',
-                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-              ),
+            alignment: Alignment.center,
+            child: Text(
+              customer.name.isNotEmpty ? customer.name[0].toUpperCase() : 'C',
+              style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(customer.name, style: AppTypography.labelLarge.copyWith(fontSize: 15)),
-                  const SizedBox(height: 2),
-                  Text(customer.phone, style: AppTypography.bodySmall.copyWith(fontSize: 12)),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(Icons.pets_rounded, size: 12, color: AppColors.primaryTerracotta),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${customer.registeredPetIds.length} registered pets',
-                        style: AppTypography.labelSmall.copyWith(fontSize: 11, color: AppColors.primaryTerracotta),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(customer.name, style: AppTypography.labelLarge.copyWith(fontSize: 15)),
+                const SizedBox(height: 2),
+                Text(customer.phone, style: AppTypography.bodySmall.copyWith(fontSize: 12)),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(Icons.pets_rounded, size: 12, color: AppColors.primaryTerracotta),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${customer.registeredPetIds.length} registered pets',
+                      style: AppTypography.labelSmall.copyWith(fontSize: 11, color: AppColors.primaryTerracotta, fontWeight: FontWeight.w700),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: AppColors.softTaupe),
-          ],
-        ),
+          ),
+          const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: AppColors.softTaupe),
+        ],
       ),
     );
   }
 }
+

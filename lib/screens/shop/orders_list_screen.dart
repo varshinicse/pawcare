@@ -5,6 +5,7 @@ import '../../providers/ecosystem_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_typography.dart';
 import '../../utils/date_helpers.dart';
+import '../../widgets/pet_background_wrapper.dart';
 import 'order_details_screen.dart';
 
 class OrdersListScreen extends StatelessWidget {
@@ -24,35 +25,39 @@ class OrdersListScreen extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: orders.isEmpty
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.receipt_long_outlined, size: 60, color: AppColors.softTaupe),
-                    const SizedBox(height: 16),
-                    Text('No Orders Placed Yet', style: AppTypography.displaySmall.copyWith(fontSize: 18)),
-                    const SizedBox(height: 6),
-                    Text(
-                      'When you purchase pet food, toys, or healthcare products, your order receipts will appear here.',
-                      style: AppTypography.bodySmall,
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+      body: PetBackgroundWrapper(
+        imagePath: 'assets/images/pet_feeding_routine.jpg',
+        imageOpacity: 0.12,
+        child: orders.isEmpty
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.receipt_long_outlined, size: 60, color: AppColors.softTaupe),
+                      const SizedBox(height: 16),
+                      Text('No Orders Placed Yet', style: AppTypography.displaySmall.copyWith(fontSize: 18)),
+                      const SizedBox(height: 6),
+                      Text(
+                        'When you purchase pet food, toys, or healthcare products, your order receipts will appear here.',
+                        style: AppTypography.bodySmall,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
+              )
+            : ListView.separated(
+                padding: const EdgeInsets.all(20),
+                itemCount: orders.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 14),
+                itemBuilder: (context, index) {
+                  final order = orders[index];
+                  return _buildOrderCard(context, order);
+                },
               ),
-            )
-          : ListView.separated(
-              padding: const EdgeInsets.all(20),
-              itemCount: orders.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 14),
-              itemBuilder: (context, index) {
-                final order = orders[index];
-                return _buildOrderCard(context, order);
-              },
-            ),
+      ),
     );
   }
 

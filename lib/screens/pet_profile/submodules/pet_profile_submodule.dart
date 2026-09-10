@@ -153,7 +153,37 @@ class PetProfileSubmodule extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Food Preferences', style: AppTypography.labelMedium.copyWith(color: AppColors.softTaupe)),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Stack(
+                    children: [
+                      Image.asset(
+                        'assets/images/pet_feeding_routine.jpg',
+                        height: 120,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                      ),
+                      Positioned(
+                        bottom: 8,
+                        left: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.65),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Text(
+                            'Daily Meal & Diet Routine 🥣',
+                            style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text('Food Preferences', style: AppTypography.labelMedium.copyWith(color: AppColors.softTaupe, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
                 Text(
                   pet.foodHabits.isNotEmpty ? pet.foodHabits : 'No specific food preferences specified.',
